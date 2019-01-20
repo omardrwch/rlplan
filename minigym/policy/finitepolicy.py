@@ -15,18 +15,49 @@ class FinitePolicy:
         self.actions = np.arange(policy_array.shape[1], dtype=np.int64)
 
     @classmethod
-    def from_action_array(cls, action_array, n_actions, seed=42):
+    def from_action_array(cls, action_array, n_actions):
         """
+        Deterministic policy
         :param: action_array: array such that action_array[s] = action to be taken in state s
         :param: n_actions: total number of actions
         :param: seed (int): Random number generator seed
         """
         if type(action_array) is not np.ndarray:
-            action_array = np.array(action_array)
+            action_array = np.array(action_array, dtype=np.int64)
         n_states = action_array.shape[0]
         policy_array = np.zeros((n_states, n_actions))
         policy_array[np.arange(n_states), action_array] = 1.0
-        return cls(policy_array, seed)
+        return cls(policy_array)
+
+    @classmethod
+    def from_v_function(cls, V, env, gamma):
+        """
+        Return greedy policy with respect to value function V
+        """
+        Na = env.action_space.n
+        Ns = env.observation_space.n
+        action_array = np.zeros(Ns, dtype=np.int64)
+        Q = np.zeros((Ns, Na))
+
+        for s in env.states:
+            for a in env.available_actions(s):
+                prob = env.P[s, a, :]
+                rewards = np.array([env.reward_fn(s, a, s_) for s_ in env.states])
+                Q[s, a] = np.sum(prob * (rewards + gamma * V))
+            action_array[s] = Q[s, env.available_actions(s)].argmax()
+        return cls.from_action_array(action_array, Na)
+
+    @classmethod
+    def from_q_function(cls, Q):
+        """
+        Return greedy policy with respect to Q function
+        """
+        Ns, Na = Q.shape
+        action_array = np.zeros(Ns, dtype=np.int64)
+
+        for s in range(Ns):
+            action_array[s] = Q[s, :].argmax()
+        return cls.from_action_array(action_array, Na)
 
     def evaluate(self, env, gamma):
         """
@@ -80,6 +111,11 @@ class FinitePolicy:
         """
         return self.random.choice(self.actions, p=self.prob_vec(s))
 
+    def __eq__(self, other):
+        return np.array_equal(self.policy_array, other.policy_array)
+
+    def __str__(self):
+        return str(self.policy_array)
 
 if __name__=='__main__':
     from minigym.envs.toy import ToyEnv1

@@ -1,4 +1,10 @@
 import numpy as np
+import warnings
+from minigym.policy import FinitePolicy
+
+
+def span(V):
+    return np.max(V) - np.min(V)
 
 
 class DynProgAgent:
@@ -14,6 +20,55 @@ class DynProgAgent:
         self.env = env
         self.method = method
         self.gamma = gamma
+        self.policy = None
+        assert (method == 'value-iteration' or method == 'policy-iteration'), "Invalid DP method!"
+
+    def train(self, V_init=None, val_it_tol=1e-8, val_it_max_it=1e4,
+                    pi_init=None, pol_it_max_it=1e3):
+        training_info = {}
+
+        if self.method == 'value-iteration':
+            if V_init is None:
+                V = np.zeros(self.env.observation_space.n)
+            else:
+                V = V_init
+
+            it = 1
+            while True:
+                TV, Q, err = self.value_iteration_step(V)
+
+                if it > val_it_max_it:
+                    warnings.warn("Value iteration: Maximum number of iterations exceeded.")
+
+                if err < val_it_tol or it > val_it_max_it:
+                    self.policy = FinitePolicy.from_q_function(Q)
+                    return TV, training_info
+
+                V = TV
+                it += 1
+
+        elif self.method == 'policy-iteration':
+            Na = self.env.action_space.n
+            Ns = self.env.observation_space.n
+            if pi_init is None:
+                policy = FinitePolicy.from_action_array(np.zeros(Ns, dtype=np.int64), Na)
+            else:
+                policy = pi_init
+
+            it = 1
+            while True:
+                new_policy = self.policy_iteration_step(policy)
+
+                if it > pol_it_max_it:
+                    warnings.warn("Maximum number of iterations exceeded.")
+
+                if new_policy == policy:
+                    V = policy.evaluate(self.env, self.gamma)
+                    self.policy = policy
+                    return V, training_info
+
+                it += 1
+                policy = new_policy
 
     def bellman_operator(self, V, policy):
         """
@@ -33,7 +88,7 @@ class DynProgAgent:
         TV = np.zeros(Ns)
 
         for s in self.env.states:
-            for a in self.env.get_actions(s):
+            for a in self.env.available_actions(s):
                 prob = self.env.P[s, a, :]
                 rewards = np.array([self.env.reward_fn(s, a, s_) for s_ in self.env.states])
                 Q[s, a] = np.sum(prob * (rewards + self.gamma * V))
@@ -58,16 +113,50 @@ class DynProgAgent:
         Na = self.env.action_space.n
 
         Q = -np.inf * np.ones((Ns, Na))
-        greedy_policy = np.zeros((Ns, Na))
 
         for s in self.env.states:
-            for a in self.env.get_actions(s):
+            for a in self.env.available_actions(s):
                 prob = self.env.P[s, a, :]
                 rewards = np.array([self.env.reward_fn(s, a, s_) for s_ in self.env.states])
                 Q[s, a] = np.sum(prob * (rewards + self.gamma * V))
 
         TV = np.max(Q, axis=1)
-        # argmax = np.argmax(Q, axis=1)
-        # greedy_policy[env.states, argmax] = 1.0
-
         return TV, Q
+
+    def value_iteration_step(self, V):
+        TV, Q = self.bellman_opt_operator(V)
+
+        if self.gamma != 1.0:
+            err = np.abs(TV - V).max()
+            assert np.sum((TV - V) < 0.0) == 0.0, "V must increase!"
+
+        else:
+            err = span(TV - V)
+            TV = TV - np.min(TV)
+
+        return TV, Q, err
+
+    def policy_iteration_step(self, policy):
+        # Policy evaluation
+        V = policy.evaluate(self.env, self.gamma)
+
+        # Policy improvement
+        new_policy = FinitePolicy.from_v_function(V, self.env, self.gamma)
+
+        return new_policy
+
+
+if __name__=='__main__':
+    from minigym.envs.toy import ToyEnv1
+    env = ToyEnv1()
+    agent = DynProgAgent(env, method='policy-iteration', gamma=0.99)
+    V, _ = agent.train()
+    print(V)
+    print(agent.policy)
+
+    print("----")
+    del agent
+    agent = DynProgAgent(env, method='value-iteration', gamma=0.99)
+    V, _ = agent.train()
+    print(V)
+    print(agent.policy)
