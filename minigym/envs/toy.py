@@ -32,6 +32,36 @@ class ToyEnv1(FiniteMDP):
         return 1.0 * (next_state == self.Ns - 1)
 
 
+class ToyEnv2(FiniteMDP):
+    """
+    Simple environment that gives a reward of 1 when going to the
+    last state and 0 otherwise.
+
+    Args:
+        seed    (int): Random number generator seed
+    """
+
+    def __init__(self, Ns=3, Na=2, seed=42):
+        # Transition probabilities
+        # shape (Ns, Na, Ns)
+        # P[s, a, s'] = Prob(S_{t+1}=s'| S_t = s, A_t = a)
+
+        # Define probabilities randomly
+        RS = np.random.RandomState(seed)
+        P = RS.uniform(size=(Ns, Na, Ns))
+
+        for a in range(Na):
+            P[:, a, :] = P[:, a, :] / P[:, a, :].sum(axis=1, keepdims=True)
+
+        # Initialize base class
+        states = np.arange(Ns).tolist()
+        action_sets = [np.arange(Na).tolist()] * Ns
+        super().__init__(states, action_sets, P, seed)
+
+    def reward_fn(self, state, action, next_state):
+        return 1.0 * (next_state == self.Ns - 1)
+
+
 if __name__ == '__main__':
     env = ToyEnv1()
 

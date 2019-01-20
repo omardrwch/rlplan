@@ -25,6 +25,15 @@ class DynProgAgent:
 
     def train(self, V_init=None, val_it_tol=1e-8, val_it_max_it=1e4,
                     pi_init=None, pol_it_max_it=1e3):
+        """
+        Train the agent. Returns estimated value function and training info.
+        :param V_init:
+        :param val_it_tol:
+        :param val_it_max_it:
+        :param pi_init:
+        :param pol_it_max_it:
+        :return V, training_info:
+        """
         training_info = {}
 
         if self.method == 'value-iteration':
@@ -41,7 +50,7 @@ class DynProgAgent:
                     warnings.warn("Value iteration: Maximum number of iterations exceeded.")
 
                 if err < val_it_tol or it > val_it_max_it:
-                    self.policy = FinitePolicy.from_q_function(Q)
+                    self.policy = FinitePolicy.from_q_function(Q, self.env)
                     return TV, training_info
 
                 V = TV
@@ -146,7 +155,7 @@ class DynProgAgent:
         return new_policy
 
 
-if __name__=='__main__':
+def test():
     from minigym.envs.toy import ToyEnv1
     env = ToyEnv1()
     agent = DynProgAgent(env, method='policy-iteration', gamma=0.99)
@@ -160,3 +169,7 @@ if __name__=='__main__':
     V, _ = agent.train()
     print(V)
     print(agent.policy)
+
+
+if __name__=='__main__':
+    test()

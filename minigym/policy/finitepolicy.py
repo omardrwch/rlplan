@@ -48,7 +48,7 @@ class FinitePolicy:
         return cls.from_action_array(action_array, Na)
 
     @classmethod
-    def from_q_function(cls, Q):
+    def from_q_function(cls, Q, env):
         """
         Return greedy policy with respect to Q function
         """
@@ -56,7 +56,7 @@ class FinitePolicy:
         action_array = np.zeros(Ns, dtype=np.int64)
 
         for s in range(Ns):
-            action_array[s] = Q[s, :].argmax()
+            action_array[s] = Q[s, env.available_actions(s)].argmax()
         return cls.from_action_array(action_array, Na)
 
     def evaluate(self, env, gamma):
@@ -117,9 +117,15 @@ class FinitePolicy:
     def __str__(self):
         return str(self.policy_array)
 
-if __name__=='__main__':
+
+def test():
     from minigym.envs.toy import ToyEnv1
 
     env = ToyEnv1()
     action_array = np.array([0, 1, 1])
     policy = FinitePolicy.from_action_array(action_array, env.action_space.n)
+    print(policy)
+
+
+if __name__=='__main__':
+    test()
