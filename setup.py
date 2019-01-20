@@ -11,5 +11,5 @@ setup(name='minigym',
       author_email='omar.drwch@gmail.com',
       license='MIT',
       packages=packages,
-      install_requires=[],
+      install_requires=['numpy', 'gym'],
       zip_safe=False)
