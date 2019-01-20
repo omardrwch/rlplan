@@ -1,5 +1,5 @@
 import numpy as np
-from minigym.policy import FinitePolicy
+from rlplan.policy import FinitePolicy
 
 
 class QLearningAgent:

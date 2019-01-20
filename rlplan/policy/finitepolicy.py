@@ -119,7 +119,7 @@ class FinitePolicy:
 
 
 def test():
-    from minigym.envs.toy import ToyEnv1
+    from rlplan.envs.toy import ToyEnv1
 
     env = ToyEnv1()
     action_array = np.array([0, 1, 1])

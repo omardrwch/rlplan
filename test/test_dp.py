@@ -1,9 +1,9 @@
 import sys
 import pytest
 import numpy as np
-from minigym.envs.toy import ToyEnv1, ToyEnv2
-from minigym.policy import FinitePolicy
-from minigym.agents import DynProgAgent
+from rlplan.envs.toy import ToyEnv1, ToyEnv2
+from rlplan.policy import FinitePolicy
+from rlplan.agents import DynProgAgent
 
 # from rlcode.src.basic_rl.mdp import myenvs, mdpmethods
 

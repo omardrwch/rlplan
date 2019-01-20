@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from minigym.policy import FinitePolicy
+from rlplan.policy import FinitePolicy
 
 
 def span(V):
@@ -156,7 +156,7 @@ class DynProgAgent:
 
 
 def test():
-    from minigym.envs.toy import ToyEnv1
+    from rlplan.envs.toy import ToyEnv1
     env = ToyEnv1()
     agent = DynProgAgent(env, method='policy-iteration', gamma=0.99)
     V, _ = agent.train()

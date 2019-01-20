@@ -1,6 +1,6 @@
-from minigym.agents import QLearningAgent
-from minigym.agents import DynProgAgent
-from minigym.envs.toy import ToyEnv1
+from rlplan.agents import QLearningAgent
+from rlplan.agents import DynProgAgent
+from rlplan.envs.toy import ToyEnv1
 
 # Discount factor
 gamma = 0.9

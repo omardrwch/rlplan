@@ -1,4 +1,4 @@
-from minigym.envs.finitemdp import FiniteMDP
+from rlplan.envs.finitemdp import FiniteMDP
 import numpy as np
 
 
