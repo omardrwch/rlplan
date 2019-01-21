@@ -16,7 +16,10 @@ ______________
 
 * rlplan.planning
     * [TrailBlazer](http://researchers.lille.inria.fr/~valko/hp/publications/grill2016blazing.pdf) 
-   
+
+* rlplan.prediction
+    * Algorithms for estimating the value of a policy: tabular TD(lambda)
+
 * rlplan.envs
     * Abstract class for finite MDP
     * ToyEnv1, ToyEnv2: simple and small MDPs for debugging 
