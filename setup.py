@@ -11,5 +11,5 @@ setup(name='rlplan',
       author_email='',
       license='MIT',
       packages=packages,
-      install_requires=['numpy', 'gym'],
+      install_requires=['numpy', 'gym', 'pytest'],
       zip_safe=False)

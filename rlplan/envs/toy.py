@@ -1,4 +1,4 @@
-from rlplan.envs.finitemdp import FiniteMDP
+from rlplan.envs import FiniteMDP
 import numpy as np
 
 

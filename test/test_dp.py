@@ -1,11 +1,8 @@
-import sys
 import pytest
 import numpy as np
 from rlplan.envs.toy import ToyEnv1, ToyEnv2
 from rlplan.policy import FinitePolicy
 from rlplan.agents import DynProgAgent
-
-# from rlcode.src.basic_rl.mdp import myenvs, mdpmethods
 
 np.random.seed(7)
 
