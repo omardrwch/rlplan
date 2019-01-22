@@ -13,11 +13,15 @@ class GridWorld(FiniteMDP):
                  success_probability=0.8,
                  reward_at=None,
                  walls=None,
-                 default_reward=-1.0):
+                 default_reward=-1.0,
+                 hit_wall_possible=True):
 
         # Grid dimensions
         self.nrows = nrows
         self.ncols = ncols
+
+        # Parameters
+        self.hit_wall_possible = hit_wall_possible
 
         # Probability of going left/right/up/down when choosing the correspondent action
         # The remaining probability mass is distributed uniformly to other available actions
@@ -68,19 +72,14 @@ class GridWorld(FiniteMDP):
         row, col = self.idx2coord(state)
         if (row, col) in self.reward_at:
             return self.reward_at[(row, col)]
+        if (row, col) in self.walls:
+            return 0.0
         return self.default_reward
 
     def build(self):
         self.grid_ascii, self.grid_idx = self.build_ascii()
         self.action_sets = self.build_action_sets()
         self.P = self.build_transition_probabilities()
-
-    def print_transition_at(self, row, col, action):
-        s_idx = self.coord2idx(row, col)
-        a_idx = self.actions_str2idx[action]
-        for next_s_idx, prob in enumerate(self.P[s_idx, a_idx]):
-            if prob > 0:
-                print("to (%d, %d) with prob %f" % (self.idx2coord(next_s_idx)+(prob,)))
 
     def build_transition_probabilities(self):
         Ns = self.Ns
@@ -93,10 +92,7 @@ class GridWorld(FiniteMDP):
             for a_idx in range(Na):
                 action_dir = self.actions_idx2str[a_idx]
 
-                if action_dir not in valid_directions:
-                    continue
-
-                if len(valid_directions) == 0 or ((srow, scol) in self.walls):
+                if len(valid_directions) == 0 or ((srow, scol) in self.walls) or (action_dir not in valid_directions):
                     P[s_idx, a_idx, s_idx] = 1.0
                     continue
 
@@ -130,7 +126,7 @@ class GridWorld(FiniteMDP):
         for s_idx in range(self.Ns):
             rr, cc = self.idx2coord(s_idx)
             actions_s = []
-            if (rr, cc) in self.walls:
+            if ((rr, cc) in self.walls) or self.hit_wall_possible:
                 actions_s = [0, 1, 2, 3]  # available, but do nothing
             else:
                 neighbors = self.get_neighbors(rr, cc)
@@ -208,6 +204,12 @@ class GridWorld(FiniteMDP):
         print(grid_values)
         return grid_values
 
+    def print_transition_at(self, row, col, action):
+        s_idx = self.coord2idx(row, col)
+        a_idx = self.actions_str2idx[action]
+        for next_s_idx, prob in enumerate(self.P[s_idx, a_idx]):
+            if prob > 0:
+                print("to (%d, %d) with prob %f" % (self.idx2coord(next_s_idx)+(prob,)))
 
     def render_ascii(self):
         print(self.grid_ascii)

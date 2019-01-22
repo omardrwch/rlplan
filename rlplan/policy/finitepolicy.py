@@ -44,7 +44,8 @@ class FinitePolicy:
                 prob = env.P[s, a, :]
                 rewards = np.array([env.reward_fn(s, a, s_) for s_ in env.states])
                 Q[s, a] = np.sum(prob * (rewards + gamma * V))
-            action_array[s] = Q[s, env.available_actions(s)].argmax()
+            temp = Q[s, env.available_actions(s)].max()
+            action_array[s] = np.abs(Q[s, :] - temp).argmin()
         return cls.from_action_array(action_array, Na)
 
     @classmethod
@@ -56,7 +57,8 @@ class FinitePolicy:
         action_array = np.zeros(Ns, dtype=np.int64)
 
         for s in range(Ns):
-            action_array[s] = Q[s, env.available_actions(s)].argmax()
+            temp = Q[s, env.available_actions(s)].max()
+            action_array[s] = np.abs(Q[s, :] - temp).argmin()
         return cls.from_action_array(action_array, Na)
 
     def evaluate(self, env, gamma):

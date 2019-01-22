@@ -83,7 +83,8 @@ class QLearningAgent:
             # exploit
             state = self.env.state
             actions = self.env.available_actions()
-            a = np.argmax(self.Q[state, actions])
+            temp = np.max(self.Q[state, actions])
+            a = np.abs(self.Q[state, :]-temp).argmin()
             return a
 
     def step(self):

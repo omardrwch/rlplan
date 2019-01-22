@@ -63,7 +63,7 @@ def test_gridworld_coordinate_conversion_2(sx, sy, idx):
 
 @pytest.mark.parametrize("sx, sy", sx_sy)
 def test_gridworld_actions(sx, sy):
-    gridworld = GridWorld(nrows=sx, ncols=sy)
+    gridworld = GridWorld(nrows=sx, ncols=sy, hit_wall_possible=False)
     assert gridworld.actions_at(0, 0) == ['right', 'down']
     assert gridworld.actions_at(sx-1, sy-1) == ['left', 'up']
     assert gridworld.actions_at(sx-1, 0) == ['right', 'up']

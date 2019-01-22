@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from rlplan.envs.toy import ToyEnv1, ToyEnv2
+from rlplan.envs import GridWorld
 from rlplan.policy import FinitePolicy
 from rlplan.agents import DynProgAgent
 
@@ -11,6 +12,13 @@ gamma_seed_params = [
             (0.75, 789),
             (0.99, 999),
         ]
+
+
+# Parameters for gridworld test
+sx_sy_gamma = [(8, 8, 0.75),
+               (8, 8, 0.95),
+               (15, 7, 0.75),
+               (7, 15, 0.95)]
 
 
 @pytest.mark.parametrize("seed", [
@@ -67,3 +75,20 @@ def test_value_and_policy_iteration(gamma, seed, Ns, Na):
 
     assert dp_agent_val.policy == dp_agent_pol.policy
     assert np.allclose(V_value_it, V_pol_it, atol=tol, rtol=1e2*tol)
+
+
+# @pytest.mark.parametrize("sx, sy, gamma", sx_sy_gamma)
+# def test_value_and_policy_iteration_gridworld(sx, sy, gamma):
+#     # Tolerance
+#     tol = 1e-8
+#
+#     # Environment
+#     env = GridWorld(nrows=sx, ncols=sy)
+#
+#     dp_agent_val = DynProgAgent(env, gamma=gamma, method='value-iteration')
+#     dp_agent_pol = DynProgAgent(env, gamma=gamma, method='policy-iteration')
+#     V_value_it, _ = dp_agent_val.train(val_it_tol=tol)
+#     V_pol_it, _ = dp_agent_pol.train()
+#
+#     assert dp_agent_val.policy == dp_agent_pol.policy
+#     assert np.allclose(V_value_it, V_pol_it, atol=tol, rtol=1e2*tol)
