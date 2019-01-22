@@ -60,7 +60,8 @@ class DynProgAgent:
             Na = self.env.action_space.n
             Ns = self.env.observation_space.n
             if pi_init is None:
-                policy = FinitePolicy.from_action_array(np.zeros(Ns, dtype=np.int64), Na)
+                action_array = np.array([self.env.available_actions(s)[0] for s in self.env.states])
+                policy = FinitePolicy.from_action_array(action_array, Na)
             else:
                 policy = pi_init
 
@@ -71,7 +72,7 @@ class DynProgAgent:
                 if it > pol_it_max_it:
                     warnings.warn("Maximum number of iterations exceeded.")
 
-                if new_policy == policy:
+                if new_policy == policy or it > pol_it_max_it:
                     V = policy.evaluate(self.env, self.gamma)
                     self.policy = policy
                     return V, training_info
@@ -121,15 +122,15 @@ class DynProgAgent:
         Ns = self.env.observation_space.n
         Na = self.env.action_space.n
 
-        Q = -np.inf * np.ones((Ns, Na))
+        Q = np.zeros((Ns, Na))
+        TV = np.zeros(Ns)
 
         for s in self.env.states:
             for a in self.env.available_actions(s):
                 prob = self.env.P[s, a, :]
                 rewards = np.array([self.env.reward_fn(s, a, s_) for s_ in self.env.states])
                 Q[s, a] = np.sum(prob * (rewards + self.gamma * V))
-
-        TV = np.max(Q, axis=1)
+            TV[s] = Q[s, self.env.available_actions(s)].max()
         return TV, Q
 
     def value_iteration_step(self, V):
@@ -137,7 +138,6 @@ class DynProgAgent:
 
         if self.gamma != 1.0:
             err = np.abs(TV - V).max()
-            assert np.sum((TV - V) < 0.0) == 0.0, "V must increase!"
 
         else:
             err = span(TV - V)

@@ -24,7 +24,7 @@ class ToyEnv1(FiniteMDP):
         P[:, 1, :] = np.array([[0.3, 0.3, 0.4], [0.7, 0.2, 0.1], [0.25, 0.25, 0.5]])
 
         # Initialize base class
-        states = np.arange(Ns).tolist()
+        states = np.arange(Ns)
         action_sets = [np.arange(Na).tolist()]*Ns
         super().__init__(states, action_sets, P, seed)
 
@@ -54,7 +54,7 @@ class ToyEnv2(FiniteMDP):
             P[:, a, :] = P[:, a, :] / P[:, a, :].sum(axis=1, keepdims=True)
 
         # Initialize base class
-        states = np.arange(Ns).tolist()
+        states = np.arange(Ns)
         action_sets = [np.arange(Na).tolist()] * Ns
         super().__init__(states, action_sets, P, seed)
 
