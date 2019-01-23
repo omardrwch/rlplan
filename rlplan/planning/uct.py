@@ -1,6 +1,8 @@
 """
 UCT algorithm, Kocsis and Szepesvári (http://ggp.stanford.edu/readings/uct.pdf)
 
+I did a tree implementation, as in TrailBlazer, but following the Fig.1 in the paper should be better.
+
 TODO: consider states in R^n, not only indexes
 """
 
@@ -8,30 +10,42 @@ import numpy as np
 
 
 class UCT:
-    def __init__(self, env, state, gamma):
+
+    def __init__(self, env, state, gamma, n_iterations=5000):
         self.env = env
         self.state = state
         self.gamma = gamma
-        self.epsilon = 0.01
-        self.cp = 0.2
+        self.epsilon = 0.1
+        self.cp = 1.0
         self.time = 1.0
+        self.n_iterations = n_iterations
         self.rollout_horizon = np.log(1.0/(self.epsilon*(1-gamma)))/np.log(1.0/gamma)
         self.root = MaxNode(env, state, gamma, self, depth=0)
 
     def run(self):
-        child, value = self.root.run()
+        tt = 0
+        while tt < self.n_iterations:
+            child, value = self.root.run()
+            tt += 1
         return child.action, value
 
 
 class MaxNode:
+    created = 0
+
     def __init__(self, env, state, gamma, uct, depth=0):
         self.uct = uct
         self.env = env
         self.state = state
         self.gamma = gamma
         self.depth = depth
-        self.children = [AvgNode(env, state, action, gamma, uct, depth+1) for action in env.available_actions(state)]
         self.effective_horizon = np.log(1.0/(uct.epsilon*(1-gamma)))/np.log(1.0/gamma)
+
+        MaxNode.created += 1
+        self.id = MaxNode.created
+        print("New MaxNode, total = %d, depth = %d" % (MaxNode.created, depth))
+
+        self.children = [AvgNode(env, state, action, gamma, uct, depth+1) for action in env.available_actions(state)]
 
     def run(self):
         if self.depth >= self.effective_horizon:
@@ -46,7 +60,7 @@ class MaxNode:
             if child_ii.visits == 0:
                 indexes[ii] = np.inf
             else:
-                indexes[ii] = child_ii.mean + self.uct.cp*np.sqrt(2.0*np.log(self.uct.time)/child_ii.visit)
+                indexes[ii] = child_ii.mean + self.uct.cp*np.sqrt(2.0*np.log(self.uct.time)/child_ii.visits)
         # update time and sample child node
         self.uct.time += 1.0
         best_child_idx = np.argmax(indexes)
@@ -54,6 +68,8 @@ class MaxNode:
 
 
 class AvgNode:
+    created = 0
+
     def __init__(self, env, state, action, gamma, uct, depth):
         self.uct = uct
         self.env = env
@@ -65,8 +81,14 @@ class AvgNode:
         self.visits = 0
         self.children = []
 
+        AvgNode.created += 1
+        self.id = AvgNode.created
+        print("New AvgNode, total = %d, depth = %d" % (AvgNode.created, depth))
+
     def run(self):
         if self.visits == 0:
+            # Increment counter
+            self.visits += 1.0
             return self.rollout()
         else:
             # Increment counter
@@ -90,6 +112,7 @@ class AvgNode:
             # Update average
             q = reward + self.gamma*child.run()[1]
             self.mean = (1.0 - 1.0/self.visits)*self.mean + (1.0/self.visits)*q
+            return self.mean
 
     def rollout(self):
         state = self.state
@@ -97,22 +120,24 @@ class AvgNode:
         env.reset(state)
         sum = 0.0
         for tt in range(int(self.uct.rollout_horizon)):
-            next_state, reward, _, _ = self.env.step(self.action)
+            next_state, reward, _, _ = self.env.step(action)
             sum += np.power(gamma, tt)*reward
+            action = self.env.action_space.sample()
         return sum
 
 
 if __name__=='__main__':
     from rlplan.agents import DynProgAgent
-    from rlplan.envs.toy import ToyEnv1
+    from rlplan.envs.toy import ToyEnv1, ToyEnv2
+    from rlplan.policy import FinitePolicy
     import numpy as np
 
     # Define parameters
-    gamma = 0.9  # discount factor
+    gamma = 0.75  # discount factor
     seed = 55  # random seed
 
     # Initialize environment
-    env = ToyEnv1(seed=seed)
+    env = ToyEnv2(seed=seed, Ns=6, Na=3)
 
     # ----------------------------------------------------------
     # Finding the exact value function
@@ -123,5 +148,17 @@ if __name__=='__main__':
     # ----------------------------------------------------------
     # Run UCT
     # ----------------------------------------------------------
-    state = env.reset()
-    uct = UCT(env, state, gamma)
+    uct_policy = 2*np.ones(env.Ns, dtype=np.int64)
+    for ss in env.states:
+        env.seed(seed)
+        state = env.reset(ss)
+        uct = UCT(env, state, gamma)
+        idx, val = uct.run()
+        uct_policy[ss] = int(idx)
+        del uct
+
+    print("UCT policy:     ", uct_policy)
+    print("Correct policy: ", dynprog.policy.policy_array.argmax(axis=1))
+
+    uct_pol = FinitePolicy.from_action_array(uct_policy, env.Na)
+    V_uct = uct_pol.evaluate(env, gamma)
