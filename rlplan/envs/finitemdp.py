@@ -1,11 +1,3 @@
-"""
-TODO:
-    * implement punishment when hitting the wall
-    * implement step() function
-    * choose between: include action "do nothing" or add an absorbing state.
-"""
-
-
 from abc import ABC, abstractmethod
 import numpy as np
 from gym import spaces
@@ -42,6 +34,7 @@ class FiniteMDP(ABC):
         self.state = None
         self.random = np.random.RandomState(seed)
         self.reset()
+        self._check()
         super().__init__()
 
     def reset(self, state=0):
@@ -56,6 +49,15 @@ class FiniteMDP(ABC):
         """
         self.state = state
         return self.state
+
+    def _check(self):
+        """
+        Check consistency of the MDP
+        """
+        # Check that P[s,a, :] is a probability distribution
+        for s in range(self.Ns):
+            for a in self.available_actions(s):
+                assert abs(self.P[s, a, :].sum() - 1.0) < 1e-15
 
     @abstractmethod
     def reward_fn(self, state, action, next_state):

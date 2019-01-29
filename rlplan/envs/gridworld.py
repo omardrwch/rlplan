@@ -1,3 +1,11 @@
+"""
+TODO:
+    * implement punishment when hitting the wall
+    * implement step() function
+    * choose between: include action "do nothing" or add an absorbing state.
+"""
+
+
 import numpy as np
 from rlplan.envs import FiniteMDP
 
