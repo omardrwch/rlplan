@@ -22,7 +22,7 @@ class UCTv2:
     :param max_rollout_len: maximum length of trajectory rollouts
     """
     def __init__(self, env, state, gamma,
-                 max_it=4000, cp=1.5, max_depth=15, max_rollout_len=150):
+                 max_it=4000, cp=1.0, max_depth=15, max_rollout_len=150):
         self.env = env
         self.state = state
         self.gamma = gamma
@@ -39,7 +39,22 @@ class UCTv2:
                 print("iteration %d of %d" % (tt+1, self.max_it))
             self.search(self.state, 0)
         action = self.select_action(state, 0)
-        return action, self.means[(self.state, action, 0)]
+        try:
+            return action, self.means[(self.state, action, 0)]
+        except KeyError:
+            return np.inf
+
+    def get_q(self):
+        """
+        :return: Q function at the root
+        """
+        q = np.zeros(self.env.action_space.n)
+        for action in self.env.available_actions(self.state):
+            try:
+                q[action] = self.means[(self.state, action, 0)]
+            except KeyError:
+                q[action] = np.inf
+        return q
 
     def search(self, state, depth):
         if depth > self.max_depth:
@@ -102,41 +117,44 @@ class UCTv2:
 
 if __name__=='__main__':
     from rlplan.agents import DynProgAgent
-    from rlplan.envs.toy import ToyEnv1, ToyEnv2
+    from rlplan.envs.deterministic_trees import ToyTree1
     from rlplan.policy import FinitePolicy
     import numpy as np
 
     # Define parameters
-    gamma = 0.25  # discount factor
+    gamma = 0.9  # discount factor
     seed = 55  # random seed
 
     # Initialize environment
-    # env = ToyEnv1(seed=seed)
-    env = ToyEnv2(seed=seed, Ns=10, Na=4)
+    env = ToyTree1()
 
     # ----------------------------------------------------------
     # Finding the exact value function
     # ----------------------------------------------------------
     dynprog = DynProgAgent(env, method='policy-iteration', gamma=gamma)
-    V, _ = dynprog.train()
+    dynprog.train()
 
     # ----------------------------------------------------------
     # Run UCT
     # ----------------------------------------------------------
-    uct_policy = 2*np.ones(env.Ns, dtype=np.int64)
-    for ss in env.states:
-        env.seed(seed)
-        state = env.reset(ss)
-        uct = UCTv2(env, state, gamma)
-        idx, val = uct.run()
-        uct_policy[ss] = int(idx)
-        del uct
+    state = env.reset(0)
+    uct = UCTv2(env, state, gamma, max_it=5000)
+    idx, val = uct.run()
 
-    print("UCT policy:     ", uct_policy)
-    print("Correct policy: ", dynprog.policy.policy_array.argmax(axis=1))
-
-    uct_pol = FinitePolicy.from_action_array(uct_policy, env.Na)
-    V_uct = uct_pol.evaluate(env, gamma)
-    print(" ")
-    print("UCT val", V_uct)
-    print("Correct val", V)
+    # uct_policy = 2*np.ones(env.Ns, dtype=np.int64)
+    # for ss in env.states:
+    #     env.seed(seed)
+    #     state = env.reset(ss)
+    #     uct = UCTv2(env, state, gamma)
+    #     idx, val = uct.run()
+    #     uct_policy[ss] = int(idx)
+    #     del uct
+    #
+    # print("UCT policy:     ", uct_policy)
+    # print("Correct policy: ", dynprog.policy.policy_array.argmax(axis=1))
+    #
+    # uct_pol = FinitePolicy.from_action_array(uct_policy, env.Na)
+    # V_uct = uct_pol.evaluate(env, gamma)
+    # print(" ")
+    # print("UCT val", V_uct)
+    # print("Correct val", V)

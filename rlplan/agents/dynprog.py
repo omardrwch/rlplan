@@ -21,6 +21,8 @@ class DynProgAgent:
         self.method = method
         self.gamma = gamma
         self.policy = None
+        self.Q = None
+        self.V = None
         assert (method == 'value-iteration' or method == 'policy-iteration'), "Invalid DP method!"
 
     def train(self, V_init=None, val_it_tol=1e-8, val_it_max_it=1e4,
@@ -50,6 +52,8 @@ class DynProgAgent:
                     warnings.warn("Value iteration: Maximum number of iterations exceeded.")
 
                 if err < val_it_tol or it > val_it_max_it:
+                    self.Q = Q
+                    self.V = TV
                     self.policy = FinitePolicy.from_q_function(Q, self.env)
                     return TV, training_info
 
@@ -74,6 +78,9 @@ class DynProgAgent:
 
                 if new_policy == policy or it > pol_it_max_it:
                     V = policy.evaluate(self.env, self.gamma)
+                    self.V = V
+                    _, Q = self.bellman_opt_operator(V)
+                    self.Q = Q
                     self.policy = policy
                     return V, training_info
 
