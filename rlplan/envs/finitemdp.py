@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from gym import spaces
+import gym
 
 
-class FiniteMDP(ABC):
+class FiniteMDP(gym.Env, ABC):
 
     """
     Base class for a finite MDP.
