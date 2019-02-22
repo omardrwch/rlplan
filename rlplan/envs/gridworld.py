@@ -2,6 +2,7 @@
 TODO:
     - Write more tests
     - Improve render functions
+    - Deal with transition probabilities at terminal state
 """
 
 
@@ -20,7 +21,8 @@ class GridWorld(FiniteMDP):
                  seed=42,
                  nrows=8,
                  ncols=8,
-                 start_coord=(0,0),
+                 start_coord=(0, 0),
+                 terminal_states = None,
                  success_probability=1.0,
                  reward_at=None,
                  walls=None,
@@ -47,7 +49,11 @@ class GridWorld(FiniteMDP):
         if walls is not None:
             self.walls = walls
         else:
-            self.walls = ((2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (3, 1), (4, 1), (5, 1), (6, 1))
+            self.walls = ((2, 1), (2, 2), (2, 3), (2, 5), (2, 6), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1))
+        if terminal_states is not None:
+            self.terminal_states = self.terminal_states
+        else:
+            self.terminal_states = ((nrows-1, ncols-1), (nrows-2, ncols-1))
 
         # Probability of going left/right/up/down when choosing the correspondent action
         # The remaining probability mass is distributed uniformly to other available actions
@@ -89,6 +95,16 @@ class GridWorld(FiniteMDP):
         # Build
         self._build()
         super().__init__(self.states, self.action_sets, self.P, seed)
+
+    def is_terminal(self, state):
+        state_coord = self.index2coord[state]
+        return state_coord in self.terminal_states
+
+    def reset(self, state=None):
+        if state is None:
+            state = self.coord2index[self.start_coord]
+        self.state = state
+        return state
 
     def reward_fn(self, state, action, next_state):
         row, col = self.index2coord[next_state]
@@ -239,7 +255,7 @@ class GridWorld(FiniteMDP):
 
 
 if __name__ == '__main__':
-    gw = GridWorld(nrows=8, ncols=7, success_probability=1.0)
+    gw = GridWorld(nrows=8, ncols=7, success_probability=0.7)
     gw.render_ascii()
 
     from rlplan.agents.dynprog import DynProgAgent
@@ -250,10 +266,11 @@ if __name__ == '__main__':
     # run
     env = gw
     state = env.reset()
-    for t in range(50):
-        env.render()
+    done = False
+    env.render()
+    while not done:
         action = dynprog.policy.sample(state)
         next_state, reward, done, info = env.step(action)
         state = next_state
-
+        env.render()
 

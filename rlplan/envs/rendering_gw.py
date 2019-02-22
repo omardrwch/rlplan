@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt, QPoint, QTimer, QProcess
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
 from PyQt5.QtGui import QPainter, QColor, QBrush
 
@@ -7,19 +7,30 @@ TILE_SIZE = 100
 
 
 class Renderer:
-    def __init__(self, gridworld):
+    """
+    :param mode: 'manual' to quit window with ENTER, 'timeout' to quit window after `delay` milliseconds
+    """
+    def __init__(self, gridworld, mode='timeout', delay=500):
         self.gw = gridworld
         self.width = self.gw.ncols*TILE_SIZE
         self.height = self.gw.nrows*TILE_SIZE
-        self.qt_app = QApplication(sys.argv)
+        self.mode = mode
+        self.delay = delay
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication(sys.argv)
+        self.qt_app = app
         self.win = Window()
         self.widget = GridWorldWidget(self.gw)
         self.win.setCentralWidget(self.widget)
         self.win.resize(self.width, self.height)
 
     def run(self):
+        if self.mode == 'timeout':
+            QTimer.singleShot(self.delay, self.win.close)
         if not self.win.finished:
             self.win.show()
+            self.win.setFocus()
             self.qt_app.exec_()
 
 
@@ -33,8 +44,11 @@ class Window(QMainWindow):
         if e.key() == Qt.Key_Return:
             self.close()
         elif e.key() == Qt.Key_Escape:
-            self.close()
-            self.finished = True
+            self.finish()
+
+    def finish(self):
+        self.close()
+        self.finished = True
 
 
 class GridWorldWidget(QWidget):

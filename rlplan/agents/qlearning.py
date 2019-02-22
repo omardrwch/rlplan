@@ -8,7 +8,7 @@ class QLearningAgent:
 
     If learning_rate is None; alpha(x,a) = 1/max(1, N(s,a))
     """
-    def __init__(self, env, gamma=0.95, learning_rate=None, min_learning_rate=0.0, epsilon=0.1, epsilon_decay=0.999,
+    def __init__(self, env, gamma=0.95, learning_rate=None, min_learning_rate=0.0, epsilon=0.1, epsilon_decay=0.995,
                  epsilon_min=0.01, rmax=1.0, verbose=1, seed=42):
         self.env = env
         self.gamma = gamma
@@ -26,7 +26,7 @@ class QLearningAgent:
         self.RS = np.random.RandomState(seed)
         self.policy = None
 
-    def train(self, n_steps=1e5, horizon=np.inf):
+    def train(self, n_steps=1e5, horizon=np.inf, render=False, render_last_n=100):
         """
         Train the agent. Returns estimated value function and training info.
 
@@ -35,11 +35,18 @@ class QLearningAgent:
 
         :param n_steps:
         :param horizon:
+        :param render: render environment during training for the last render_last_n steps
+        :param render_last_n: how many steps to render before finishing
         :return:
         """
         training_info = {}
         while self.t < n_steps:
+
             done = self.step()
+
+            if render and self.t > n_steps-render_last_n:
+                self.env.render()
+
             if done or ((self.t+1) % horizon == 0):
                 self.env.reset()
 

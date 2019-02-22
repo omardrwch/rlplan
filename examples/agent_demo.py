@@ -1,13 +1,15 @@
 from rlplan.agents import QLearningAgent
 from rlplan.agents import DynProgAgent
 from rlplan.envs.toy import ToyEnv1
+from rlplan.envs.gridworld import GridWorld
 from rlplan.prediction import TabularTD
 
 # Discount factor
 gamma = 0.9
 
 # Create environment
-env = ToyEnv1()
+# env = ToyEnv1()
+env = GridWorld(success_probability=0.9)
 
 # Initialize and train dynamic programming agent
 dp_agent = DynProgAgent(env, method='policy-iteration', gamma=gamma)

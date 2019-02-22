@@ -119,12 +119,18 @@ class FiniteMDP(gym.Env, ABC):
         assert action in self.available_actions(), "Invalid action!"
         next_state = self.sample_transition(self.state, action)
         reward = self.reward_fn(self.state, action, next_state)
-        done = False
+        done = self.is_terminal(next_state)
         info = {}
         self.state = next_state
 
         observation = next_state
         return observation, reward, done, info
+
+    def is_terminal(self, state):
+        """
+        Returns true if a state is terminal.
+        """
+        return False
 
     def print(self):
         """
@@ -140,8 +146,5 @@ class FiniteMDP(gym.Env, ABC):
                 for ss in self.states:
                     print(2*indent + 'prob -> %d = %0.2f'%(ss, self.P[s, a, ss]))
             print("~~~~~~~~~~~~~~~~~~~~")
-
-    def render(self):
-        pass
 
 
