@@ -1,17 +1,18 @@
 """
 TODO:
     - Write more tests
-    - Render functions
+    - Improve render functions
 """
 
 
 import numpy as np
 from rlplan.envs import FiniteMDP
+# rlplan.envs.rendering_gw is imported in the constructor of GridWorld
 
 
 class GridWorld(FiniteMDP):
     """
-    Args:
+    Args:g
         seed    (int): Random number generator seed
     """
 
@@ -20,10 +21,16 @@ class GridWorld(FiniteMDP):
                  nrows=8,
                  ncols=8,
                  start_coord=(0,0),
-                 success_probability=0.8,
+                 success_probability=1.0,
                  reward_at=None,
                  walls=None,
-                 default_reward=-1.0):
+                 default_reward=-1.0,
+                 enable_render=True):
+
+        # Print information
+        self.enable_render = enable_render
+        if enable_render:
+            print("GridWorld rendering is enabled. Press ENTER to close window and ESCAPE to stop rendering.")
 
         # Grid dimensions
         self.nrows = nrows
@@ -36,11 +43,11 @@ class GridWorld(FiniteMDP):
         if reward_at is not None:
             self.reward_at = reward_at
         else:
-            self.reward_at = {(nrows-1, ncols-1): 1, (nrows-2, ncols-1): 0}
+            self.reward_at = {(nrows-1, ncols-1): 1, (nrows-2, ncols-1): -10}
         if walls is not None:
             self.walls = walls
         else:
-            self.walls = ((2, 1), (3, 3))
+            self.walls = ((2, 1), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (3, 1), (4, 1), (5, 1), (6, 1))
 
         # Probability of going left/right/up/down when choosing the correspondent action
         # The remaining probability mass is distributed uniformly to other available actions
@@ -64,13 +71,17 @@ class GridWorld(FiniteMDP):
         self.index2coord = {}
         self.coord2index = {}
 
-        # Visualization of the grid
+        # Visualization of the grid & rendering
         self.grid_ascii = None
         self.grid_idx = None
+        self.renderer = None
+        if self.enable_render:
+            import rlplan.envs.rendering_gw as rendering
+            self.renderer = rendering.Renderer(self)
 
         # MDP parameters for base class
-        self.states = None
-        self.action_sets = None
+        self.states = []
+        self.action_sets = []
         self.P = None
         self.Ns = None
         self.Na = 4
@@ -217,13 +228,32 @@ class GridWorld(FiniteMDP):
     def render_ascii(self):
         print(self.grid_ascii)
 
+    def render(self):
+        if self.enable_render:
+            self.renderer.run()
+        else:
+            print("Rendering not enabled. Call constructor with enable_rendering=True.")
+
+    def close(self):
+        pass
+
 
 if __name__ == '__main__':
-    gw = GridWorld(nrows=8, ncols=7, success_probability=0.5)
+    gw = GridWorld(nrows=8, ncols=7, success_probability=1.0)
     gw.render_ascii()
 
     from rlplan.agents.dynprog import DynProgAgent
     dynprog = DynProgAgent(gw, method='policy-iteration', gamma=0.9)
     V, _ = dynprog.train()
     gw.display_values(V)
-#
+
+    # run
+    env = gw
+    state = env.reset()
+    for t in range(50):
+        env.render()
+        action = dynprog.policy.sample(state)
+        next_state, reward, done, info = env.step(action)
+        state = next_state
+
+

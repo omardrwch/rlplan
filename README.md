@@ -6,6 +6,11 @@ The goals of this package are:
 * Implement different environments (Markov Decision Processes) whose optimal policies/value functions are known;
 * Implement and evaluate reinforcement learning and planning algorithms.
 
+# Requirements
+______________
+
+* Main requirements are specified in setup.py and requirements.txt
+* pyqt5 must be installed in order to render gridworld environment.
 
 # Contents
 ______________
