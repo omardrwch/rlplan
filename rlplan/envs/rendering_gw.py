@@ -1,54 +1,75 @@
 import sys
-from PyQt5.QtCore import Qt, QPoint, QTimer, QProcess
+from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
 from PyQt5.QtGui import QPainter, QColor, QBrush
 
 TILE_SIZE = 100
+RUNNING = False
 
 
 class Renderer:
     """
-    :param mode: 'manual' to quit window with ENTER, 'timeout' to quit window after `delay` milliseconds
+    :param mode: 'manual' to quit window with ENTER
+                 'callback'to call callback_func every `delay` milliseconds
+
     """
-    def __init__(self, gridworld, mode='timeout', delay=500):
+    def __init__(self, gridworld, mode='manual', callback_func=None, delay=500):
         self.gw = gridworld
         self.width = self.gw.ncols*TILE_SIZE
         self.height = self.gw.nrows*TILE_SIZE
         self.mode = mode
+        self.callback_func = callback_func
         self.delay = delay
+
         app = QApplication.instance()
         if app is None:
             app = QApplication(sys.argv)
+
         self.qt_app = app
         self.win = Window()
         self.widget = GridWorldWidget(self.gw)
         self.win.setCentralWidget(self.widget)
         self.win.resize(self.width, self.height)
+        self.running = False
 
     def run(self):
-        if self.mode == 'timeout':
-            QTimer.singleShot(self.delay, self.win.close)
-        if not self.win.finished:
-            self.win.show()
-            self.win.setFocus()
-            self.qt_app.exec_()
+        global RUNNING
+        if self.mode == 'callback':
+            QTimer.singleShot(self.delay, self.callback_func)
+            self.widget.repaint()
+            if not RUNNING:
+                self.win.show()
+                self.win.setFocus()
+                RUNNING = True
+                self.qt_app.exec_()
+
+        elif self.mode == 'manual':
+            if not RUNNING:
+                self.win.show()
+                self.win.setFocus()
+                RUNNING = True
+                self.qt_app.exec_()
 
 
 class Window(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.finished = False
 
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Return:
-            self.close()
-        elif e.key() == Qt.Key_Escape:
+        if e.key() == Qt.Key_Escape or e.key() == Qt.Key_Return:
             self.finish()
 
+    def closeEvent(self, event):
+        self.finish()
+
     def finish(self):
+        global RUNNING
         self.close()
-        self.finished = True
+        app = QApplication.instance()
+        if app is not None:
+            app.quit()
+        RUNNING = False
 
 
 class GridWorldWidget(QWidget):
@@ -61,7 +82,7 @@ class GridWorldWidget(QWidget):
         self.wall_color = QColor(120, 120, 120)
 
     def paintEvent(self, event):
-        painter = QPainter(self)         # recupere le QPainter du widget
+        painter = QPainter(self)
         painter.setPen(QColor(255, 255, 255))
 
         # draw grid

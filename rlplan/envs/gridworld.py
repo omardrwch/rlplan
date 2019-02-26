@@ -244,18 +244,45 @@ class GridWorld(FiniteMDP):
     def render_ascii(self):
         print(self.grid_ascii)
 
-    def render(self):
-        if self.enable_render:
+    # ------------------------
+    # Functions for rendering
+    # ------------------------
+
+    def render(self, mode='manual', policy=None):
+        """
+        :param mode: 'manual', to quit window with ENTER
+                     'auto', to execute policy until done or until ESCAPE is pressed
+        :param policy:
+        :return:
+        """
+        if not self.enable_render:
+            print("Rendering not enabled. Call constructor with enable_rendering=True.")
+            return
+        if mode == 'manual':
+            print("Rendering in manual-mode - press ESCAPE or ENTER to quit")
+            self.renderer.mode = mode
+            self.renderer.run()
+        elif mode == 'auto':
+            assert policy is not None, "agent needs to be defined"
+            print("Rendering in auto-mode - press ESCAPE or ENTER to quit")
+            self.renderer.mode = 'callback'
+            self.renderer.callback_func = lambda: self.policy_step(policy)
             self.renderer.run()
         else:
-            print("Rendering not enabled. Call constructor with enable_rendering=True.")
+            print("Invalid rendering mode.")
+            return
 
-    def close(self):
-        pass
+    def policy_step(self, policy):
+        action = policy.sample(self.state)
+        _, _, done, _ = self.step(action)
+        if not done:
+            self.renderer.run()
+        else:
+            print("\n ...done!")
 
 
 if __name__ == '__main__':
-    gw = GridWorld(nrows=8, ncols=7, success_probability=0.7)
+    gw = GridWorld(nrows=8, ncols=7, success_probability=0.99)
     gw.render_ascii()
 
     from rlplan.agents.dynprog import DynProgAgent
@@ -264,13 +291,18 @@ if __name__ == '__main__':
     gw.display_values(V)
 
     # run
-    env = gw
-    state = env.reset()
-    done = False
-    env.render()
-    while not done:
-        action = dynprog.policy.sample(state)
-        next_state, reward, done, info = env.step(action)
-        state = next_state
-        env.render()
+    gw.render(mode='auto', policy=dynprog.policy)
+
+    # reset
+    gw.reset()
+
+    # env = gw
+    # state = env.reset()
+    # done = False
+    # env.render()
+    # while not done:
+    #     action = dynprog.policy.sample(state)
+    #     next_state, reward, done, info = env.step(action)
+    #     state = next_state
+    #     env.render()
 
