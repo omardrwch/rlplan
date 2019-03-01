@@ -77,13 +77,9 @@ class GridWorld(FiniteMDP):
         self.index2coord = {}
         self.coord2index = {}
 
-        # Visualization of the grid & rendering
+        # Ascii Visualization
         self.grid_ascii = None
         self.grid_idx = None
-        self.renderer = None
-        if self.enable_render:
-            import rlplan.envs.rendering_gw as rendering
-            self.renderer = rendering.Renderer(self)
 
         # MDP parameters for base class
         self.states = []
@@ -95,6 +91,12 @@ class GridWorld(FiniteMDP):
         # Build
         self._build()
         super().__init__(self.states, self.action_sets, self.P, seed)
+
+        # Graphic rendering
+        if self.enable_render:
+            import rlplan.envs.rendering_gw as rendering
+            self.render_info = self.get_render_info()
+            self.renderer = rendering.Renderer(self.render_info)
 
     def is_terminal(self, state):
         state_coord = self.index2coord[state]
@@ -248,6 +250,14 @@ class GridWorld(FiniteMDP):
     # Functions for rendering
     # ------------------------
 
+    def get_render_info(self):
+        info = {'walls': self.walls,
+                'nrows': self.nrows,
+                'ncols': self.ncols,
+                'reward_at': self.reward_at,
+                'current_state': self.index2coord[self.state]}
+        return info
+
     def render(self, mode='manual', policy=None):
         """
         :param mode: 'manual', to quit window with ENTER
@@ -261,13 +271,13 @@ class GridWorld(FiniteMDP):
         if mode == 'manual':
             print("Rendering in manual-mode - press ESCAPE or ENTER to quit")
             self.renderer.mode = mode
-            self.renderer.run()
+            self.renderer.run(self.get_render_info())
         elif mode == 'auto':
             assert policy is not None, "agent needs to be defined"
             print("Rendering in auto-mode - press ESCAPE or ENTER to quit")
             self.renderer.mode = 'callback'
             self.renderer.callback_func = lambda: self.policy_step(policy)
-            self.renderer.run()
+            self.renderer.run(self.get_render_info())
         else:
             print("Invalid rendering mode.")
             return
@@ -276,7 +286,7 @@ class GridWorld(FiniteMDP):
         action = policy.sample(self.state)
         _, _, done, _ = self.step(action)
         if not done:
-            self.renderer.run()
+            self.renderer.run(self.get_render_info())
         else:
             print("\n ...done!")
 

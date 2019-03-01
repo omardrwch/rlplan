@@ -73,7 +73,7 @@ class QLearningAgent:
 
     def get_learning_rate(self, s, a):
         if self.learning_rate is None:
-            return max(1.0/max(1.0, self.Nsa[s, a]**0.75), self.min_learning_rate)
+            return max(1.0/max(1.0, self.Nsa[s, a])**0.75, self.min_learning_rate)
         else:
             return max(self.learning_rate, self.min_learning_rate)
 

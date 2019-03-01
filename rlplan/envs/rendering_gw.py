@@ -11,12 +11,11 @@ class Renderer:
     """
     :param mode: 'manual' to quit window with ENTER
                  'callback'to call callback_func every `delay` milliseconds
-
     """
-    def __init__(self, gridworld, mode='manual', callback_func=None, delay=500):
-        self.gw = gridworld
-        self.width = self.gw.ncols*TILE_SIZE
-        self.height = self.gw.nrows*TILE_SIZE
+    def __init__(self, render_info, mode='manual', callback_func=None, delay=500):
+        self.render_info = render_info
+        self.width = self.render_info['ncols']*TILE_SIZE
+        self.height = self.render_info['nrows']*TILE_SIZE
         self.mode = mode
         self.callback_func = callback_func
         self.delay = delay
@@ -27,13 +26,24 @@ class Renderer:
 
         self.qt_app = app
         self.win = Window()
-        self.widget = GridWorldWidget(self.gw)
+        self.widget = GridWorldWidget(self.render_info)
         self.win.setCentralWidget(self.widget)
         self.win.resize(self.width, self.height)
         self.running = False
 
-    def run(self):
+    def run(self, render_info=None):
+        """
+        :param render_info:
+        :return:
+        """
         global RUNNING
+
+        # update render_info if necessary
+        if render_info is not None:
+            self.render_info = render_info
+            self.widget.render_info = render_info
+
+        # run 'callback' mode
         if self.mode == 'callback':
             QTimer.singleShot(self.delay, self.callback_func)
             self.widget.repaint()
@@ -43,6 +53,7 @@ class Renderer:
                 RUNNING = True
                 self.qt_app.exec_()
 
+        # run 'manual' mode
         elif self.mode == 'manual':
             if not RUNNING:
                 self.win.show()
@@ -74,31 +85,31 @@ class Window(QMainWindow):
 
 class GridWorldWidget(QWidget):
 
-    def __init__(self, gw):
+    def __init__(self, render_info):
         super().__init__()
-        self.gw = gw
+        self.render_info = render_info
         self.color1 = QColor(0, 0, 0)
         self.color2 = QColor(0, 0, 0)
         self.wall_color = QColor(120, 120, 120)
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setPen(QColor(255, 255, 255))
+        painter.setPen(QColor(120, 120, 120))
 
         # draw grid
         aux = 1
-        for rr in range(self.gw.nrows):
-            for cc in range(self.gw.ncols):
+        for rr in range(self.render_info['nrows']):
+            for cc in range(self.render_info['ncols']):
                 x0 = cc * TILE_SIZE
                 y0 = rr * TILE_SIZE
                 if aux == 1:
                     color = self.color1
                 else:
                     color = self.color2
-                if (rr, cc) in self.gw.walls:
+                if (rr, cc) in self.render_info['walls']:
                     color = self.wall_color
-                if (rr, cc) in self.gw.reward_at:
-                    reward = self.gw.reward_at[(rr,cc)]
+                if (rr, cc) in self.render_info['reward_at']:
+                    reward = self.render_info['reward_at'][(rr, cc)]
                     if reward >= 0:
                         color = QColor(0, 200, 0)
                     else:
@@ -109,7 +120,7 @@ class GridWorldWidget(QWidget):
                 painter.drawRect(x0, y0, TILE_SIZE, TILE_SIZE)
 
         # draw current state
-        row, col = self.gw.index2coord[self.gw.state]
+        row, col = self.render_info['current_state']
         x = col
         y = row
         x = (TILE_SIZE*x) + TILE_SIZE//2
