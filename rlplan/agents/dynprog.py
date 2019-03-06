@@ -1,13 +1,14 @@
 import numpy as np
 import warnings
 from rlplan.policy import FinitePolicy
+from rlplan.agents import Agent
 
 
 def span(V):
     return np.max(V) - np.min(V)
 
 
-class DynProgAgent:
+class DynProgAgent(Agent):
     """
     Class implemeting Dynamic Programming to solve a finite MDP
 
@@ -17,6 +18,8 @@ class DynProgAgent:
         gamma (float): discount factor in [0, 1]
     """
     def __init__(self, env, method='value-iteration', gamma=0.95):
+        super().__init__()
+        self.id = 'DynamicProgramming'
         self.env = env
         self.method = method
         self.gamma = gamma

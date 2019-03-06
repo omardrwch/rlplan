@@ -5,6 +5,10 @@ from PyQt5.QtGui import QPainter, QColor, QBrush
 
 TILE_SIZE = 100
 RUNNING = False
+STOP = False
+app = QApplication.instance()
+if app is None:
+    app = QApplication(sys.argv)
 
 
 class Renderer:
@@ -20,23 +24,22 @@ class Renderer:
         self.callback_func = callback_func
         self.delay = delay
 
-        app = QApplication.instance()
-        if app is None:
-            app = QApplication(sys.argv)
-
-        self.qt_app = app
         self.win = Window()
         self.widget = GridWorldWidget(self.render_info)
         self.win.setCentralWidget(self.widget)
         self.win.resize(self.width, self.height)
-        self.running = False
+        self.timer = QTimer()
+
+    def reset(self):
+        global STOP
+        STOP = False
 
     def run(self, render_info=None):
         """
         :param render_info:
         :return:
         """
-        global RUNNING
+        global RUNNING, STOP
 
         # update render_info if necessary
         if render_info is not None:
@@ -45,13 +48,18 @@ class Renderer:
 
         # run 'callback' mode
         if self.mode == 'callback':
-            QTimer.singleShot(self.delay, self.callback_func)
-            self.widget.repaint()
-            if not RUNNING:
-                self.win.show()
-                self.win.setFocus()
-                RUNNING = True
-                self.qt_app.exec_()
+            if not STOP:
+                self.timer.singleShot(self.delay, self.callback_func)
+                self.widget.repaint()
+                if not RUNNING:
+                    self.win.show()
+                    self.win.setFocus()
+                    RUNNING = True
+                    app.exec_()
+            if STOP:
+                self.timer.stop()
+                return 1
+            return 0
 
         # run 'manual' mode
         elif self.mode == 'manual':
@@ -59,7 +67,8 @@ class Renderer:
                 self.win.show()
                 self.win.setFocus()
                 RUNNING = True
-                self.qt_app.exec_()
+                app.exec_()
+            return 0
 
 
 class Window(QMainWindow):
@@ -75,12 +84,13 @@ class Window(QMainWindow):
         self.finish()
 
     def finish(self):
-        global RUNNING
+        global RUNNING, STOP
         self.close()
-        app = QApplication.instance()
-        if app is not None:
-            app.quit()
+        app_instance = QApplication.instance()
+        if app_instance is not None:
+            app_instance.quit()
         RUNNING = False
+        STOP = True
 
 
 class GridWorldWidget(QWidget):

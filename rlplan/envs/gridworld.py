@@ -13,12 +13,15 @@ from rlplan.envs import FiniteMDP
 
 class GridWorld(FiniteMDP):
     """
-    Args:g
+    Note:
+        deepcopy of GridWorld always has enable_render = False
+
+    Args:
         seed    (int): Random number generator seed
     """
 
     def __init__(self,
-                 seed=42,
+                 seed_val=42,
                  nrows=8,
                  ncols=8,
                  start_coord=(0, 0),
@@ -51,7 +54,7 @@ class GridWorld(FiniteMDP):
         else:
             self.walls = ((2, 1), (2, 2), (2, 3), (2, 5), (2, 6), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1))
         if terminal_states is not None:
-            self.terminal_states = self.terminal_states
+            self.terminal_states = terminal_states
         else:
             self.terminal_states = ((nrows-1, ncols-1), (nrows-2, ncols-1))
 
@@ -59,8 +62,8 @@ class GridWorld(FiniteMDP):
         # The remaining probability mass is distributed uniformly to other available actions
         self.success_probability = success_probability
 
-        # Random state
-        self.random = np.random.RandomState(seed)
+        # Value of the seed
+        self.seed_val = seed_val
 
         # Start coordinate
         self.start_coord = start_coord
@@ -90,7 +93,7 @@ class GridWorld(FiniteMDP):
 
         # Build
         self._build()
-        super().__init__(self.states, self.action_sets, self.P, seed)
+        super().__init__(self.states, self.action_sets, self.P, seed_val)
 
         # Graphic rendering
         if self.enable_render:
@@ -247,6 +250,24 @@ class GridWorld(FiniteMDP):
         print(self.grid_ascii)
 
     # ------------------------
+    # Deep copy ignoring renderer
+    # ------------------------
+    def __deepcopy__(self, memo):
+        new_gw = GridWorld(
+                 self.seed_val,
+                 self.nrows,
+                 self.ncols,
+                 self.start_coord,
+                 self.terminal_states,
+                 self.success_probability,
+                 self.reward_at,
+                 self.walls,
+                 self.default_reward,
+                 enable_render=False)
+        new_gw.state = self.state
+        return new_gw
+
+    # ------------------------
     # Functions for rendering
     # ------------------------
 
@@ -265,6 +286,7 @@ class GridWorld(FiniteMDP):
         :param policy:
         :return:
         """
+        self.renderer.reset()
         if not self.enable_render:
             print("Rendering not enabled. Call constructor with enable_rendering=True.")
             return

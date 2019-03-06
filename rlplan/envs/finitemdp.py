@@ -21,7 +21,8 @@ class FiniteMDP(gym.Env, ABC):
         Na   (int): Number of actions
         random   (np.random.RandomState) : random number generator
     """
-    def __init__(self, states, action_sets, P, seed=42):
+    def __init__(self, states, action_sets, P, seed_val=42):
+        super().__init__()
         self.states = states
         self.action_sets = action_sets
         self.actions = list(set().union(*action_sets))
@@ -33,10 +34,9 @@ class FiniteMDP(gym.Env, ABC):
         self.observation_space = spaces.Discrete(self.Ns)
 
         self.state = None
-        self.random = np.random.RandomState(seed)
+        self.random = np.random.RandomState(seed_val)
         self.reset()
         self._check()
-        super().__init__()
 
     def reset(self, state=0):
         """

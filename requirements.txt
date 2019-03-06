@@ -2,3 +2,4 @@ gym
 numpy
 pytest
 pyqt5
+matplotlib

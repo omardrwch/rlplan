@@ -1,15 +1,18 @@
 import numpy as np
 from rlplan.policy import FinitePolicy
+from rlplan.agents import Agent
 
 
-class QLearningAgent:
+class QLearningAgent(Agent):
     """
     Implements Q-learning algorithm for finite MDPs using epsilon-greedy exploration
 
     If learning_rate is None; alpha(x,a) = 1/max(1, N(s,a))
     """
     def __init__(self, env, gamma=0.95, learning_rate=None, min_learning_rate=0.0, epsilon=0.1, epsilon_decay=0.995,
-                 epsilon_min=0.01, rmax=1.0, verbose=1, seed=42):
+                 epsilon_min=0.01, rmax=1.0, verbose=1, seed_val=42):
+        super().__init__()
+        self.id = 'QLearningAgent'
         self.env = env
         self.gamma = gamma
         self.learning_rate = learning_rate
@@ -23,10 +26,11 @@ class QLearningAgent:
         self.episode = 0
         self.state = env.reset()
         self.verbose = verbose
-        self.RS = np.random.RandomState(seed)
+        self.seed_val = seed_val
+        self.RS = np.random.RandomState(seed_val)
         self.policy = None
 
-    def train(self, n_steps=1e5, horizon=np.inf):
+    def train(self, n_steps=1e5, horizon=np.inf, eval_every=50, eval_params=None):
         """
         Train the agent. Returns estimated value function and training info.
 
@@ -35,9 +39,14 @@ class QLearningAgent:
 
         :param n_steps:
         :param horizon:
+        :param eval_every: interval for evaluating the agent
+        :param eval_params: dictionary containing parameters to send to Agent.eval()
         :return:
         """
         training_info = {}
+        training_info['rewards_list'] = []
+        training_info['x_data'] = []
+
         while self.t < n_steps:
 
             done = self.step()
@@ -47,9 +56,18 @@ class QLearningAgent:
 
             if self.verbose > 0:
                 if (self.t+1) % 1000 == 0:
-                    print("Q-learning iteration %d out of %d" % (self.t, n_steps))
+                    print("Q-learning iteration %d out of %d" % (self.t+1, n_steps))
 
             self.t += 1
+
+            if self.t % eval_every == 0:
+                self.policy = FinitePolicy.from_q_function(self.Q, self.env)
+                if eval_params is None:
+                    discounted_rewards = self.eval()
+                else:
+                    discounted_rewards = self.eval(**eval_params)
+                training_info['rewards_list'].append(discounted_rewards)
+                training_info['x_data'].append(self.t)
 
         self.policy = FinitePolicy.from_q_function(self.Q, self.env)
         V = np.zeros(self.env.observation_space.n)

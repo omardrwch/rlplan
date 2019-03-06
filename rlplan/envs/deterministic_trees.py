@@ -34,7 +34,7 @@ class ToyTree1(DeterministicFiniteMDP):
         super().__init__(transitions, rewards)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     from rlplan.agents import DynProgAgent
     env = ToyTree1()
     agent = DynProgAgent(env, method='policy-iteration', gamma=0.95)
