@@ -2,7 +2,6 @@
 TODO:
     - Write more tests
     - Improve render functions
-    - Deal with transition probabilities at terminal state
 """
 
 
@@ -35,7 +34,7 @@ class GridWorld(FiniteMDP):
         # Print information
         self.enable_render = enable_render
         if enable_render:
-            print("GridWorld rendering is enabled. Press ENTER to close window and ESCAPE to stop rendering.")
+            print("GridWorld rendering is enabled. Press ENTER or ESCAPE to stop rendering.")
 
         # Grid dimensions
         self.nrows = nrows

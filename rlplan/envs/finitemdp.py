@@ -135,7 +135,6 @@ class FiniteMDP(gym.Env, ABC):
     def print(self):
         """
         Print the structure of the MDP.
-        The complexity is Na*(Ns**2), but you don't want to print large stuff anyway :)
         """
         indent = '    '
         for s in self.states:
@@ -144,7 +143,8 @@ class FiniteMDP(gym.Env, ABC):
             for a in As:
                 print(indent + "Action ", a)
                 for ss in self.states:
-                    print(2*indent + 'prob -> %d = %0.2f'%(ss, self.P[s, a, ss]))
+                    if self.P[s, a, ss] > 0.0:
+                        print(2*indent + 'transition to %d with prob %0.2f'%(ss, self.P[s, a, ss]))
             print("~~~~~~~~~~~~~~~~~~~~")
 
 

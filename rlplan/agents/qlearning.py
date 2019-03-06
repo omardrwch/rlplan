@@ -7,9 +7,20 @@ class QLearningAgent(Agent):
     """
     Implements Q-learning algorithm for finite MDPs using epsilon-greedy exploration
 
-    If learning_rate is None; alpha(x,a) = 1/max(1, N(s,a))
+    If learning_rate is None; alpha(x,a) = 1/max(1, N(s,a))**0.75
+
+    :param env: environment
+    :param gamma: discount factor
+    :param learning_rate:
+    :param min_learning_rate: minimum learning rate value
+    :param epsilon: exploration parameter
+    :param epsilon_decay: decay factor of epsilon at every step
+    :param epsilon_min: minimum value of epsilon
+    :param rmax: maximum reward value
+    :param verbose: if > 0, information is printed
+    :param seed_val: integer, seed for np.random.RandomState
     """
-    def __init__(self, env, gamma=0.95, learning_rate=None, min_learning_rate=0.0, epsilon=0.1, epsilon_decay=0.995,
+    def __init__(self, env, gamma=0.95, learning_rate=None, min_learning_rate=0.05, epsilon=1.0, epsilon_decay=0.995,
                  epsilon_min=0.01, rmax=1.0, verbose=1, seed_val=42):
         super().__init__()
         self.id = 'QLearningAgent'
@@ -20,17 +31,16 @@ class QLearningAgent(Agent):
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.epsilon_min = epsilon_min
-        self.Q = np.zeros((env.Ns, env.Na))
+        self.Q = np.ones((env.Ns, env.Na))*rmax/(1-gamma)
         self.Nsa = np.zeros((env.Ns, env.Na))
         self.t = 0
-        self.episode = 0
         self.state = env.reset()
         self.verbose = verbose
         self.seed_val = seed_val
         self.RS = np.random.RandomState(seed_val)
         self.policy = None
 
-    def train(self, n_steps=1e5, horizon=np.inf, eval_every=50, eval_params=None):
+    def train(self, n_steps=1e5, horizon=np.inf, eval_every=100, eval_params=None):
         """
         Train the agent. Returns estimated value function and training info.
 
@@ -48,7 +58,6 @@ class QLearningAgent(Agent):
         training_info['x_data'] = []
 
         while self.t < n_steps:
-
             done = self.step()
 
             if done or ((self.t+1) % horizon == 0):
@@ -63,10 +72,10 @@ class QLearningAgent(Agent):
             if self.t % eval_every == 0:
                 self.policy = FinitePolicy.from_q_function(self.Q, self.env)
                 if eval_params is None:
-                    discounted_rewards = self.eval()
+                    rewards = self.eval()
                 else:
-                    discounted_rewards = self.eval(**eval_params)
-                training_info['rewards_list'].append(discounted_rewards)
+                    rewards = self.eval(**eval_params)
+                training_info['rewards_list'].append(rewards)
                 training_info['x_data'].append(self.t)
 
         self.policy = FinitePolicy.from_q_function(self.Q, self.env)
@@ -76,13 +85,13 @@ class QLearningAgent(Agent):
 
         return V, training_info
 
-    def bellman_residual(self, r, x, a, y):
+    def get_delta(self, r, x, a, y):
         """
         :param r: reward
         :param x: current state
         :param a: current action
         :param y: next state
-        :return:  bellman residual
+        :return:
         """
         max_q_y_a = self.Q[y, self.env.available_actions()].max()
         q_x_a = self.Q[x, a]
@@ -121,7 +130,7 @@ class QLearningAgent(Agent):
         observation, reward, done, info = self.env.step(a)
         y = observation
         r = reward
-        delta = self.bellman_residual(r, x, a, y)
+        delta = self.get_delta(r, x, a, y)
 
         # Update
         self.Q[x, a] = self.Q[x, a] + alpha*delta

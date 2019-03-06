@@ -53,7 +53,7 @@ class DeterministicFiniteMDP(FiniteMDP):
             action_sets.append(list(actions_dict[state]))
 
         # Initialize super
-        super().__init__(states, action_sets, P, seed=42)
+        super().__init__(states, action_sets, P, seed_val=42)
 
     def reward_fn(self, state, action, next_state):
         try:
