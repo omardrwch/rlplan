@@ -1,5 +1,4 @@
 # rlplan
-______________
 
 Just some code I'm writing to test things. 
 
@@ -9,13 +8,11 @@ These environments can be used to debug RL algorithms.
 * Implement reinforcement learning and planning algorithms.
 
 # Requirements
-______________
 
 * Main requirements are specified in setup.py and requirements.txt
 * pyqt5 must be installed in order to render gridworld environment.
 
 # Contents
-______________
  
 * rlplan.agents
     * Agent: base class, with a function to evaluate the agent
@@ -35,6 +32,7 @@ ______________
     * ToyEnv1, ToyEnv2: simple and small MDPs for debugging 
    
 * rlplan.policy
+    * Policy: base class
     * FinitePolicy: represents a policy for a finite MDP. Useful methods: sample, evaluate (exact - with linear system),
         constructor from V or Q functions.
  
