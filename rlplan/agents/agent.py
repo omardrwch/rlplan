@@ -21,13 +21,17 @@ class Agent:
 
     """
     Base class for a reinforcement learning agent
+
+    :param id: string to identify the agent
+    :param env: environment
+    :param policy: rlplan.policy.Policy object
     """
     def __init__(self):
         self.id = None
         self.env = None
         self.policy = None
 
-    def eval(self, n_sim=10, horizon=150, discount=1.0, env=None):
+    def eval(self, n_sim=1, horizon=150, discount=1.0, env=None):
         """
         :param n_sim: number of monte carlo simulations
         :param horizon: maximum number of steps in a single simulation

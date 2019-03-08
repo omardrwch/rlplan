@@ -15,5 +15,5 @@ V_ql, training_info = ql_agent.train(n_steps=50000)
 env.reset()
 env.render(mode='auto', policy=ql_agent.policy)
 
-# Visualize learning curve
+# Visualize training curve
 ql_agent.plot_rewards(training_info['rewards_list'], training_info['x_data'], show=True)

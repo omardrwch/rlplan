@@ -4,6 +4,8 @@ http://papers.nips.cc/paper/6253-blazing-the-trails-before-beating-the-path-samp
 
 Based on Edouard Leurent's code:
 https://github.com/eleurent/rl-agents/blob/master/rl_agents/agents/tree_search/trailblazer.py
+
+Warning: there are probably bugs, but this algorithm is difficult to debug.
 """
 
 import numpy as np

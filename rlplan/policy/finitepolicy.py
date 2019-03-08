@@ -1,7 +1,8 @@
 import numpy as np
+from rlplan.policy.policy import Policy
 
 
-class FinitePolicy:
+class FinitePolicy(Policy):
     """
     Class for defining a policy in a finite MDP.
 
@@ -10,6 +11,7 @@ class FinitePolicy:
         seed (int): Random number generator seed
     """
     def __init__(self, policy_array, seed=42):
+        super().__init__()
         self.policy_array = policy_array
         self.random = np.random.RandomState(seed)
         self.actions = np.arange(policy_array.shape[1], dtype=np.int64)

@@ -1,10 +1,12 @@
 # rlplan
 ______________
 
-The goals of this package are: 
+Just some code I'm writing to test things. 
 
-* Implement different environments (Markov Decision Processes) whose optimal policies/value functions are known;
-* Implement and evaluate reinforcement learning and planning algorithms.
+
+* Implement different environments (Markov Decision Processes) whose optimal policies/value functions can be computed. 
+These environments can be used to debug RL algorithms. 
+* Implement reinforcement learning and planning algorithms.
 
 # Requirements
 ______________
@@ -16,17 +18,20 @@ ______________
 ______________
  
 * rlplan.agents
+    * Agent: base class, with a function to evaluate the agent
     * Dynamic programming (value/policy iteration)
     * Q-Learning
 
 * rlplan.planning
-    * [TrailBlazer](http://researchers.lille.inria.fr/~valko/hp/publications/grill2016blazing.pdf) 
+    * [UCT](http://ggp.stanford.edu/readings/uct.pdf) implemented for MDPs
+    * [TrailBlazer](http://researchers.lille.inria.fr/~valko/hp/publications/grill2016blazing.pdf)
 
 * rlplan.prediction
-    * Algorithms for estimating the value of a policy: tabular TD(lambda)
+    * tabular TD(lambda)
 
 * rlplan.envs
-    * Abstract class for finite MDP
+    * Chain
+    * Gridworld
     * ToyEnv1, ToyEnv2: simple and small MDPs for debugging 
    
 * rlplan.policy
