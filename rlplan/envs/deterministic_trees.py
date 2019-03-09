@@ -8,10 +8,7 @@ import numpy as np
 
 class ToyTree1(DeterministicFiniteMDP):
     """
-    Tree-shaped MDP with depth 2 (root has depth 0), two actions per state. Leaves transition to root for all actions.
-
-    Args:
-        seed    (int): Random number generator seed
+    Tree-shaped MDP with depth 2 (root has depth 0), two actions per state. Leaves are terminal states.
     """
 
     def __init__(self):
@@ -21,17 +18,22 @@ class ToyTree1(DeterministicFiniteMDP):
                        (1, 1, 4),
                        (2, 0, 5),
                        (2, 1, 6),
-                       (3, 0, 0),
-                       (3, 1, 0),
-                       (4, 0, 0),
-                       (4, 1, 0),
-                       (5, 0, 0),
-                       (5, 1, 0),
-                       (6, 0, 0),
-                       (6, 1, 0)
+                       (3, 0, 3),
+                       (3, 1, 3),
+                       (4, 0, 4),
+                       (4, 1, 4),
+                       (5, 0, 5),
+                       (5, 1, 5),
+                       (6, 0, 6),
+                       (6, 1, 6)
                        ]
-        rewards = {(6,): 1.0}  # reward of 1.0 at state 6
+        rewards = {(2, 1, 6): 1.0}  # reward of 1.0 at state 6
         super().__init__(transitions, rewards)
+
+    def is_terminal(self, state):
+        if state in [3, 4, 5, 6]:
+            return True
+        return False
 
 
 if __name__ == '__main__':
@@ -39,4 +41,5 @@ if __name__ == '__main__':
     env = ToyTree1()
     agent = DynProgAgent(env, method='policy-iteration', gamma=0.95)
     V, _ = agent.train()
+    print(V)
     print(agent.policy)

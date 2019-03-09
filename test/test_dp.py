@@ -15,20 +15,7 @@ gamma_seed_params = [
 
 
 # Parameters for gridworld test
-sx_sy_gamma = [(8, 8, 0.75),
-               (8, 8, 0.95),
-               (15, 7, 0.75),
-               (7, 15, 0.95)]
-
-
-@pytest.mark.parametrize("seed", [
-    (456, 789)
-])
-def test_toyenv1(seed):
-    env = ToyEnv1(seed)
-    assert env.state == 0
-    observation, reward, done, info = env.step(0)
-    assert env.state == observation
+sx_sy_gamma = [(10, 8, 0.95)]
 
 
 @pytest.mark.parametrize("gamma,seed", gamma_seed_params)
@@ -74,21 +61,20 @@ def test_value_and_policy_iteration(gamma, seed, Ns, Na):
     V_pol_it, _ = dp_agent_pol.train()
 
     assert dp_agent_val.policy == dp_agent_pol.policy
+    assert np.allclose(V_value_it, V_pol_it, atol=tol, rtol=1e1*tol)
+
+
+@pytest.mark.parametrize("sx, sy, gamma", sx_sy_gamma)
+def test_value_and_policy_iteration_gridworld(sx, sy, gamma):
+    # Tolerance
+    tol = 1e-8
+
+    # Environment
+    env = GridWorld(nrows=sx, ncols=sy)
+
+    dp_agent_val = DynProgAgent(env, gamma=gamma, method='value-iteration')
+    dp_agent_pol = DynProgAgent(env, gamma=gamma, method='policy-iteration')
+    V_value_it, _ = dp_agent_val.train(val_it_tol=tol)
+    V_pol_it, _ = dp_agent_pol.train()
+
     assert np.allclose(V_value_it, V_pol_it, atol=tol, rtol=1e2*tol)
-
-
-# @pytest.mark.parametrize("sx, sy, gamma", sx_sy_gamma)
-# def test_value_and_policy_iteration_gridworld(sx, sy, gamma):
-#     # Tolerance
-#     tol = 1e-8
-#
-#     # Environment
-#     env = GridWorld(nrows=sx, ncols=sy)
-#
-#     dp_agent_val = DynProgAgent(env, gamma=gamma, method='value-iteration')
-#     dp_agent_pol = DynProgAgent(env, gamma=gamma, method='policy-iteration')
-#     V_value_it, _ = dp_agent_val.train(val_it_tol=tol)
-#     V_pol_it, _ = dp_agent_pol.train()
-#
-#     assert dp_agent_val.policy == dp_agent_pol.policy
-#     assert np.allclose(V_value_it, V_pol_it, atol=tol, rtol=1e2*tol)

@@ -12,6 +12,8 @@ class DynProgAgent(Agent):
     """
     Class implemeting Dynamic Programming to solve a finite MDP
 
+    Important: does not work on environments whose reward_fn is not deterministic!
+
     Args:
         env (FiniteMDP): environment object
         method (str): 'value-iteration' or 'policy-iteration'
@@ -181,5 +183,5 @@ def test():
     print(agent.policy)
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     test()

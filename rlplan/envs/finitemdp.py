@@ -60,21 +60,6 @@ class FiniteMDP(gym.Env, ABC):
             for a in self.available_actions(s):
                 assert abs(self.P[s, a, :].sum() - 1.0) < 1e-15
 
-    @abstractmethod
-    def reward_fn(self, state, action, next_state):
-        """
-        Reward function
-
-        Args:
-            state      (int): current state
-            action     (int): current action
-            next_state (int): next state
-
-        Returns:
-            reward (float)
-        """
-        pass
-
     def available_actions(self, state=None):
         if state is not None:
             return self.action_sets[state]
@@ -147,4 +132,17 @@ class FiniteMDP(gym.Env, ABC):
                         print(2*indent + 'transition to %d with prob %0.2f'%(ss, self.P[s, a, ss]))
             print("~~~~~~~~~~~~~~~~~~~~")
 
+    @abstractmethod
+    def reward_fn(self, state, action, next_state):
+        """
+        Reward function
 
+        Args:
+            state      (int): current state
+            action     (int): current action
+            next_state (int): next state
+
+        Returns:
+            reward (float)
+        """
+        pass

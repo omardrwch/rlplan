@@ -8,10 +8,10 @@ class ToyEnv1(FiniteMDP):
     last state and 0 otherwise.
 
     Args:
-        seed    (int): Random number generator seed
+        seed_val    (int): Random number generator seed
     """
 
-    def __init__(self, seed=42):
+    def __init__(self, seed_val=42):
         # Transition probabilities
         # shape (Ns, Na, Ns)
         # P[s, a, s'] = Prob(S_{t+1}=s'| S_t = s, A_t = a)
@@ -26,7 +26,7 @@ class ToyEnv1(FiniteMDP):
         # Initialize base class
         states = np.arange(Ns)
         action_sets = [np.arange(Na).tolist()]*Ns
-        super().__init__(states, action_sets, P, seed)
+        super().__init__(states, action_sets, P, seed_val)
 
     def reward_fn(self, state, action, next_state):
         return 1.0 * (next_state == self.Ns - 1)
@@ -38,16 +38,16 @@ class ToyEnv2(FiniteMDP):
     last state and 0 otherwise.
 
     Args:
-        seed    (int): Random number generator seed
+        seed_val    (int): Random number generator seed
     """
 
-    def __init__(self, Ns=3, Na=2, seed=42):
+    def __init__(self, Ns=3, Na=2, seed_val=42):
         # Transition probabilities
         # shape (Ns, Na, Ns)
         # P[s, a, s'] = Prob(S_{t+1}=s'| S_t = s, A_t = a)
 
         # Define probabilities randomly
-        RS = np.random.RandomState(seed)
+        RS = np.random.RandomState(seed_val)
         P = RS.uniform(size=(Ns, Na, Ns))
 
         for a in range(Na):
@@ -56,7 +56,7 @@ class ToyEnv2(FiniteMDP):
         # Initialize base class
         states = np.arange(Ns)
         action_sets = [np.arange(Na).tolist()] * Ns
-        super().__init__(states, action_sets, P, seed)
+        super().__init__(states, action_sets, P, seed_val)
 
     def reward_fn(self, state, action, next_state):
         return 1.0 * (next_state == self.Ns - 1)
