@@ -31,14 +31,17 @@ class QLearningAgent(Agent):
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.epsilon_min = epsilon_min
-        self.Q = np.ones((env.Ns, env.Na))*rmax/(1-gamma)
-        self.Nsa = np.zeros((env.Ns, env.Na))
         self.t = 0
         self.state = env.reset()
         self.verbose = verbose
         self.seed_val = seed_val
         self.RS = np.random.RandomState(seed_val)
-        self.policy = None
+
+        Ns = env.observation_space.n
+        Na = env.action_space.n
+        self.Q = np.ones((Ns, Na))*rmax/(1-gamma)
+        self.Nsa = np.zeros((Ns, Na))
+        self.policy = FinitePolicy.from_q_function(self.Q, self.env)
 
     def train(self, n_steps=1e5, horizon=np.inf, eval_every=100, eval_params=None):
         """
@@ -83,7 +86,8 @@ class QLearningAgent(Agent):
         for s in self.env.states:
             V[s] = self.Q[s, self.env.available_actions(s)].max()
 
-        return V, training_info
+        training_info['V'] = V
+        return training_info
 
     def get_delta(self, r, x, a, y):
         """

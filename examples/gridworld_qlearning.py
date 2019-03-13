@@ -9,7 +9,7 @@ env = GridWorld(success_probability=0.75)
 
 # Initialize and train q-learning agent
 ql_agent = QLearningAgent(env, gamma=gamma, learning_rate=None, min_learning_rate=0.1, epsilon=1.0, epsilon_min=0.1)
-V_ql, training_info = ql_agent.train(n_steps=50000)
+training_info = ql_agent.train(n_steps=50000, eval_params={'n_sim' : 10})
 
 # Visualize policy
 env.reset()

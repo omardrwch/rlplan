@@ -3,3 +3,7 @@ numpy
 pytest
 pyqt5
 matplotlib
+torch
+tensorflow
+tensorflow-tensorboard
+tensorboardX
