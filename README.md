@@ -18,6 +18,7 @@ These environments can be used to debug RL algorithms.
     * Agent: base class, with a function to evaluate the agent
     * Dynamic programming (value/policy iteration)
     * Q-Learning
+    * Cross Entropy method
 
 * rlplan.planning
     * [UCT](http://ggp.stanford.edu/readings/uct.pdf) implemented for MDPs
