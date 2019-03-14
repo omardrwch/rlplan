@@ -91,7 +91,7 @@ class UCT4MDP(Agent):
             if self.it_count > self.n_iterations:
                 self.it_count = 0
                 break
-        best_child = self.root.choose_child()
+        best_child = self.root.get_estimate_best_action()
         return best_child.mean, best_child.action
 
     def reset(self, state):
@@ -131,6 +131,16 @@ class MaxNode:
             if child.count > 0:
                 indexes[a] = child.mean + self.model.cp*np.sqrt(2.0*np.log(total_visits)/child.count)
         return self.children[indexes.argmax()]
+
+    def get_estimate_best_action(self):
+        """
+        :return: the child that has been played the most
+        """
+        max_child = self.children[0]
+        for child in self.children:
+            if child.count > max_child.count:
+                max_child = child
+        return max_child
 
 
 class AvgNode:

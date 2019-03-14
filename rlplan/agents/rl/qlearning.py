@@ -1,6 +1,7 @@
 import numpy as np
 from rlplan.policy import FinitePolicy
 from rlplan.agents import Agent
+from copy import deepcopy
 
 
 class QLearningAgent(Agent):
@@ -23,6 +24,9 @@ class QLearningAgent(Agent):
     def __init__(self, env, gamma=0.95, learning_rate=None, min_learning_rate=0.05, epsilon=1.0, epsilon_decay=0.995,
                  epsilon_min=0.01, rmax=1.0, verbose=1, seed_val=42):
         super().__init__()
+        # avoid changing the state of original env
+        env = deepcopy(env)
+
         self.id = 'QLearningAgent'
         self.env = env
         self.gamma = gamma
@@ -32,13 +36,13 @@ class QLearningAgent(Agent):
         self.epsilon_decay = epsilon_decay
         self.epsilon_min = epsilon_min
         self.t = 0
-        self.state = env.reset()
+        self.state = self.env.reset()
         self.verbose = verbose
         self.seed_val = seed_val
         self.RS = np.random.RandomState(seed_val)
 
-        Ns = env.observation_space.n
-        Na = env.action_space.n
+        Ns = self.env.observation_space.n
+        Na = self.env.action_space.n
         self.Q = np.ones((Ns, Na))*rmax/(1-gamma)
         self.Nsa = np.zeros((Ns, Na))
         self.policy = FinitePolicy.from_q_function(self.Q, self.env)

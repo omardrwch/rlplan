@@ -17,6 +17,7 @@ from tensorboardX import SummaryWriter
 from rlplan.agents import Agent
 from rlplan.policy import Policy
 from rlplan.utils.wrappers import DiscreteOneHotWrapper
+from copy import deepcopy
 
 Episode = namedtuple('Episode', field_names=['reward', 'steps'])
 EpisodeStep = namedtuple('EpisodeStep', field_names=['observation', 'action'])
@@ -49,11 +50,15 @@ class CrossEntropyAgent(Agent):
         super().__init__()
         self.id = 'CrossEntropyAgent'
 
+        # avoid changing the state of original env
+        env = deepcopy(env)
+
         # environment wrapper
         if isinstance(env.observation_space, gym.spaces.Discrete):
             self.env = DiscreteOneHotWrapper(env)
         else:
             self.env = env
+        assert isinstance(env.observation_space, gym.spaces.Discrete), "Action space must be discrete."
 
         # parameters
         self.gamma = gamma
@@ -119,7 +124,7 @@ class CrossEntropyAgent(Agent):
         train_act_v = torch.LongTensor(train_act)
         return train_obs_v, train_act_v, reward_bound, reward_mean
 
-    def train(self, n_iterations=50):
+    def train(self, n_steps=50):
         use_cuda = torch.cuda.is_available()
         device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -139,7 +144,7 @@ class CrossEntropyAgent(Agent):
             # writer.add_scalar("loss", loss_v.item(), iter_no)
             # writer.add_scalar("reward_bound", reward_b, iter_no)
             # writer.add_scalar("reward_mean", reward_m, iter_no)
-            if iter_no > n_iterations:
+            if iter_no > n_steps:
                 print("...done.")
                 break
 
