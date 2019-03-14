@@ -316,7 +316,7 @@ if __name__ == '__main__':
     gw = GridWorld(nrows=8, ncols=7, success_probability=0.99)
     gw.render_ascii()
 
-    from rlplan.agents.dynprog import DynProgAgent
+    from rlplan.agents.planning import DynProgAgent
     dynprog = DynProgAgent(gw, method='policy-iteration', gamma=0.9)
     V, _ = dynprog.train()
     gw.display_values(V)

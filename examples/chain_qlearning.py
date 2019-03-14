@@ -1,4 +1,4 @@
-from rlplan.agents import QLearningAgent
+from rlplan.agents.rl import QLearningAgent
 from rlplan.envs import Chain
 
 # Discount factor

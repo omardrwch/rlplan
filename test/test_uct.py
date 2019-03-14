@@ -1,6 +1,6 @@
 import pytest
 from rlplan.envs.bandit import BernoulliBandit
-from rlplan.planning import UCT4MDP
+from rlplan.agents.planning import UCT4MDP
 import numpy as np
 np.random.seed(7)
 

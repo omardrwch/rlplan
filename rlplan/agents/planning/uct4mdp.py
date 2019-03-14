@@ -208,12 +208,4 @@ if __name__ == '__main__':
     uct = UCT4MDP(env, state, fixed_depth=False, max_depth=5, gamma=0.95, cp=1.5, n_it=200)
     print(uct.run())
 
-    state = env.reset()
-    done = False
-    while not done:
-        action = uct.policy.sample(state)
-        nexts, reward, done, _ = env.step(action)
-        print(state, action, nexts)
-        print(env.index2coord[state], env.a_idx2str[action], env.index2coord[nexts])
-        state = nexts
-        env.render()
+    env.render(mode='auto', policy=uct.policy)

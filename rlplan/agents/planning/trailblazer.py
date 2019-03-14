@@ -188,7 +188,7 @@ class AvgNode:
 
 
 if __name__=='__main__':
-    from rlplan.agents import DynProgAgent
+    from rlplan.agents.planning import DynProgAgent
     from rlplan.envs.toy import ToyEnv1
     import numpy as np
 
@@ -197,7 +197,7 @@ if __name__=='__main__':
     seed = 55  # random seed
 
     # Initialize environment
-    env = ToyEnv1(seed=seed)
+    env = ToyEnv1(seed_val=seed)
 
     # ----------------------------------------------------------
     # Finding the exact value function

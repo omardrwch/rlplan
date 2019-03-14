@@ -3,7 +3,7 @@ import numpy as np
 from rlplan.envs.toy import ToyEnv1, ToyEnv2
 from rlplan.envs import GridWorld
 from rlplan.policy import FinitePolicy
-from rlplan.agents import DynProgAgent
+from rlplan.agents.planning import DynProgAgent
 
 np.random.seed(7)
 
