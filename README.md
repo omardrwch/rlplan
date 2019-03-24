@@ -16,11 +16,11 @@ These environments can be used to debug RL algorithms.
  
 * rlplan.agents.rl
     * Agent: base class, with a function to evaluate the agent
-    * Dynamic programming (value/policy iteration)
     * Q-Learning
     * Cross Entropy method
 
 * rlplan.agents.planning
+    * Dynamic programming (value/policy iteration)
     * [UCT](http://ggp.stanford.edu/readings/uct.pdf) implemented for MDPs
     * [TrailBlazer](http://researchers.lille.inria.fr/~valko/hp/publications/grill2016blazing.pdf)
 

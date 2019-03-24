@@ -7,6 +7,9 @@ The CE method aims to maximize the likelihood of actions that led to high reward
 
 """
 
+# tensorboard --logdir=runs
+
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -58,7 +61,7 @@ class CrossEntropyAgent(Agent):
             self.env = DiscreteOneHotWrapper(env)
         else:
             self.env = env
-        assert isinstance(env.observation_space, gym.spaces.Discrete), "Action space must be discrete."
+        assert isinstance(env.action_space, gym.spaces.Discrete), "Action space must be discrete."
 
         # parameters
         self.gamma = gamma
@@ -125,6 +128,8 @@ class CrossEntropyAgent(Agent):
         return train_obs_v, train_act_v, reward_bound, reward_mean
 
     def train(self, n_steps=50):
+        writer = SummaryWriter()
+
         use_cuda = torch.cuda.is_available()
         device = torch.device("cuda" if use_cuda else "cpu")
 
@@ -141,10 +146,11 @@ class CrossEntropyAgent(Agent):
             optimizer.step()
             print("%d: loss=%.3f, reward_mean=%.1f, reward_bound=%.1f" % (
                 iter_no, loss_v.item(), reward_m, reward_b))
-            # writer.add_scalar("loss", loss_v.item(), iter_no)
-            # writer.add_scalar("reward_bound", reward_b, iter_no)
-            # writer.add_scalar("reward_mean", reward_m, iter_no)
+            writer.add_scalar("loss", loss_v.item(), iter_no)
+            writer.add_scalar("reward_bound", reward_b, iter_no)
+            writer.add_scalar("reward_mean", reward_m, iter_no)
             if iter_no > n_steps:
+                writer.close()
                 print("...done.")
                 break
 
@@ -161,7 +167,8 @@ class CrossEntropyAgent(Agent):
 
 
 if __name__ == "__main__":
-    env_ = gym.make("CartPole-v0")
-    agent = CrossEntropyAgent(env_)
+    # env_ = gym.make("CartPole-v0")
+    env_ = gym.make("Acrobot-v1")
+    agent = CrossEntropyAgent(env_, gamma=1.0, batch_size=32, percentile=50)
     # env_ = gym.make("FrozenLake-v0")
     # agent = CrossEntropyAgent(env_, batch_size=200, learning_rate=0.001, horizon=np.inf)
