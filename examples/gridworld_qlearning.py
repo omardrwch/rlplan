@@ -5,7 +5,7 @@ from rlplan.envs import GridWorld
 gamma = 0.9
 
 # Create environment
-env = GridWorld(success_probability=0.75)
+env = GridWorld(success_probability=0.85)
 
 # Initialize and train q-learning agent
 ql_agent = QLearningAgent(env, gamma=gamma, learning_rate=None, min_learning_rate=0.1, epsilon=1.0, epsilon_min=0.1)

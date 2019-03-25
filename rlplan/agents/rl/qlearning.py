@@ -68,7 +68,7 @@ class QLearningAgent(Agent):
             done = self.step()
 
             if done or ((self.t+1) % horizon == 0):
-                self.env.reset()
+                self.state = self.env.reset()
 
             if self.verbose > 0:
                 if (self.t+1) % 1000 == 0:
@@ -87,7 +87,7 @@ class QLearningAgent(Agent):
 
         self.policy = FinitePolicy.from_q_function(self.Q, self.env)
         V = np.zeros(self.env.observation_space.n)
-        for s in self.env.states:
+        for s in range(self.env.observation_space.n):
             V[s] = self.Q[s, self.env.available_actions(s)].max()
 
         training_info['V'] = V
@@ -118,7 +118,7 @@ class QLearningAgent(Agent):
             return np.random.choice(self.env.available_actions())
         else:
             # exploit
-            state = self.env.state
+            state = self.state
             actions = self.env.available_actions()
             temp = np.max(self.Q[state, actions])
             a = np.abs(self.Q[state, :]-temp).argmin()
@@ -126,7 +126,7 @@ class QLearningAgent(Agent):
 
     def step(self):
         # Current state
-        x = self.env.state
+        x = self.state
 
         # Choose action
         a = self.get_action()
@@ -140,10 +140,13 @@ class QLearningAgent(Agent):
         r = reward
         delta = self.get_delta(r, x, a, y)
 
-        # Update
+        # Update Q
         self.Q[x, a] = self.Q[x, a] + alpha*delta
 
         self.Nsa[x, a] += 1
         self.epsilon = max(self.epsilon*self.epsilon_decay, self.epsilon_min)
+
+        # Update state
+        self.state = observation
 
         return done
