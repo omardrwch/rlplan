@@ -16,7 +16,16 @@ class GridWorld(FiniteMDP):
         deep copies of GridWorld have same renderer
 
     Args:
-        seed    (int): Random number generator seed
+        :param seed_val: Random number generator seed
+        :param nrows: number of rows
+        :param ncols: number of columns
+        :param start_coord: tuple with coordinates of initial position
+        :param terminal_states: ((x0, y0), (x1, y1), ...) = coordinates of terminal states
+        :param success_probability: probability of moving in the chosen direction
+        :param reward_at: dictionary, keys = tuple containing coordinates, values = reward at each coordinate
+        :param walls: ((x0, y0), (x1, y1), ...) = coordinates of walls
+        :param default_reward: reward received at states not in  'reward_at'
+        :param enable_render: if True, requires pyqt5, creates renderer object
     """
 
     def __init__(self,
