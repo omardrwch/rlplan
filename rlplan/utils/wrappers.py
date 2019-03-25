@@ -13,3 +13,5 @@ class DiscreteOneHotWrapper(gym.ObservationWrapper):
         res = np.copy(self.observation_space.low)
         res[observation] = 1.0
         return res
+
+

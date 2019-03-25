@@ -45,6 +45,8 @@ class CrossEntropyPolicy(Policy):
         self.cross_ent_agent = cross_ent_agent
 
     def sample(self, s):
+        if not isinstance(s, np.ndarray):
+            raise TypeError("Vector encoding expected for state variable.")
         return self.cross_ent_agent.get_action(s)
 
 

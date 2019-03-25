@@ -283,7 +283,7 @@ class GridWorld(FiniteMDP):
                 'current_state': self.index2coord[self.state]}
         return info
 
-    def render(self, mode='manual', policy=None):
+    def render(self, mode='auto', policy=None):
         """
         :param mode: 'manual', to quit window with ENTER
                      'auto', to execute policy until done or until ESCAPE is pressed
@@ -295,7 +295,7 @@ class GridWorld(FiniteMDP):
             print("Rendering not enabled. Call constructor with enable_rendering=True.")
             return
         if mode == 'manual':
-            print("Rendering in manual-mode - press ESCAPE or ENTER to quit")
+            print("Rendering in manual-mode - press ESCAPE or ENTER to close window.")
             self.renderer.mode = mode
             self.renderer.run(self.get_render_info())
         elif mode == 'auto':
@@ -309,7 +309,13 @@ class GridWorld(FiniteMDP):
             return
 
     def policy_step(self, policy):
-        action = policy.sample(self.state)
+        try:
+            action = policy.sample(self.state)
+        except TypeError:  # if state is one hot encoded
+            one_hot_state = np.zeros(self.Ns)
+            one_hot_state[self.state] = 1.0
+            action = policy.sample(one_hot_state)
+
         _, _, done, _ = self.step(action)
         if not done:
             self.renderer.run(self.get_render_info())
