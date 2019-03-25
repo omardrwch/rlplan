@@ -13,7 +13,7 @@ from rlplan.envs import FiniteMDP
 class GridWorld(FiniteMDP):
     """
     Note:
-        deepcopy of GridWorld always has enable_render = False
+        deep copies of GridWorld have same renderer
 
     Args:
         seed    (int): Random number generator seed
@@ -249,7 +249,7 @@ class GridWorld(FiniteMDP):
         print(self.grid_ascii)
 
     # ------------------------
-    # Deep copy ignoring renderer
+    # Deep copy
     # ------------------------
     def __deepcopy__(self, memo):
         new_gw = GridWorld(
@@ -264,6 +264,11 @@ class GridWorld(FiniteMDP):
                  self.default_reward,
                  enable_render=False)
         new_gw.state = self.state
+
+        # use the same renderer
+        new_gw.renderer = self.renderer
+        new_gw.enable_render = True
+
         return new_gw
 
     # ------------------------

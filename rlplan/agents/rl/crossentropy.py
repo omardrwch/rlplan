@@ -168,7 +168,9 @@ class CrossEntropyAgent(Agent):
 
 if __name__ == "__main__":
     # env_ = gym.make("CartPole-v0")
-    env_ = gym.make("Acrobot-v1")
+    # env_ = gym.make("Acrobot-v1")
+    from rlplan.envs import GridWorld
+    env_ = GridWorld()
     agent = CrossEntropyAgent(env_, gamma=1.0, batch_size=32, percentile=50)
     # env_ = gym.make("FrozenLake-v0")
     # agent = CrossEntropyAgent(env_, batch_size=200, learning_rate=0.001, horizon=np.inf)
