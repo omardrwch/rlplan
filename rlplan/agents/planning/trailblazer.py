@@ -18,6 +18,7 @@ class TrailBlazer:
     """
     Notes: states are assumed to be in R^d (this includes discrete spaces)
 
+    :param state: initial state
     :param oracle: analogous to gym environment, but reset function can take a state as input, so we can simulate the
                     environment for any initial state, e.g., oracle.reset(state=s)
     :param gamma: discount factor

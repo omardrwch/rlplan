@@ -2,6 +2,31 @@ import numpy as np
 from rlplan.policy import FinitePolicy
 from rlplan.agents import Agent
 from copy import deepcopy
+from rlplan.policy import Policy
+
+
+class UctPolicy(Policy):
+    """
+    UCT policy: when queried for an action, run UCT.
+    If memoize is True, one UCT object per state is saved and reused.
+    """
+    def __init__(self, uct, memoize=True):
+        super().__init__()
+        self.uct = uct
+        self.memoize = memoize
+        self.state2uct = {}
+
+    def sample(self, state):
+        if not self.memoize:
+            _, action = self.uct.run(state)
+        else:
+            if state in self.state2uct:
+                self.state2uct[state].n_iterations = 500
+                _, action = self.state2uct[state].run()
+            else:
+                _, action = self.uct.run(state)
+                self.state2uct[state] = deepcopy(self.uct)
+        return action
 
 
 class QLearningAgent(Agent):
@@ -63,12 +88,21 @@ class QLearningAgent(Agent):
         training_info = {}
         training_info['rewards_list'] = []
         training_info['x_data'] = []
+        training_info['n_episodes'] = 0
+        training_info['episode_total_reward'] = []
 
+        episode_reward = 0
         while self.t < n_steps:
-            done = self.step()
+            done, reward = self.step()
+            episode_reward += reward
 
             if done or ((self.t+1) % horizon == 0):
                 self.state = self.env.reset()
+                training_info['n_episodes'] += 1
+                training_info['episode_total_reward'].append(episode_reward)
+                if self.verbose > 0 and (training_info['n_episodes'] % 500 == 0):
+                    print("Episode %d, total reward = %0.2f" % (training_info['n_episodes'], episode_reward))
+                episode_reward = 0
 
             if self.verbose > 0:
                 if (self.t+1) % 1000 == 0:
@@ -112,7 +146,7 @@ class QLearningAgent(Agent):
         else:
             return max(self.learning_rate, self.min_learning_rate)
 
-    def get_action(self):
+    def get_action(self, x):
         if self.RS.uniform(0, 1) < self.epsilon:
             # explore
             return np.random.choice(self.env.available_actions())
@@ -129,7 +163,7 @@ class QLearningAgent(Agent):
         x = self.state
 
         # Choose action
-        a = self.get_action()
+        a = self.get_action(x)
 
         # Learning rate
         alpha = self.get_learning_rate(x, a)
@@ -149,4 +183,4 @@ class QLearningAgent(Agent):
         # Update state
         self.state = observation
 
-        return done
+        return done, reward

@@ -3,8 +3,6 @@ Implements the cross-entropy method, as presented in the book "Deep Reinforcemen
 
 Let p(ai | si, v) be the probability of taking action ai in state si, when the network has parameters v
 The CE method aims to maximize the likelihood of actions that led to high rewards.
-
-
 """
 
 # tensorboard --logdir=runs
@@ -52,6 +50,15 @@ class CrossEntropyPolicy(Policy):
 
 class CrossEntropyAgent(Agent):
     def __init__(self, env, gamma=0.99, batch_size=16, percentile=70, horizon=500, learning_rate=0.01, net=None):
+        """
+        :param env: gym environment
+        :param gamma: discount factor
+        :param batch_size: number of trajectories to sample at each iteration
+        :param percentile: remove trajectories whose rewards are inferior to np.percentile(rewards, self.percentile)
+        :param horizon: maximum length of a trajectory
+        :param learning_rate: adam learning rate
+        :param net: neural net, input = state, output = vector such that (probability over actions) = softmax(output)
+        """
         super().__init__()
         self.id = 'CrossEntropyAgent'
 
@@ -169,10 +176,11 @@ class CrossEntropyAgent(Agent):
 
 
 if __name__ == "__main__":
-    # env_ = gym.make("CartPole-v0")
+    env_ = gym.make("CartPole-v0")
     # env_ = gym.make("Acrobot-v1")
-    from rlplan.envs import GridWorld
-    env_ = GridWorld()
-    agent = CrossEntropyAgent(env_, gamma=1.0, batch_size=32, percentile=50)
+    # from rlplan.envs import GridWorld
+    # env_ = GridWorld()
+    agent = CrossEntropyAgent(env_, gamma=1.0, batch_size=128, percentile=70, learning_rate=0.05)
+    agent.train(n_steps=80)
     # env_ = gym.make("FrozenLake-v0")
     # agent = CrossEntropyAgent(env_, batch_size=200, learning_rate=0.001, horizon=np.inf)

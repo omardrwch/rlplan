@@ -20,7 +20,7 @@ def compute_discounted_rewards(rewards, discount):
 class Agent:
 
     """
-    Base class for a reinforcement learning agent
+    Base class for an agent
 
     :param id: string to identify the agent
     :param env: environment
