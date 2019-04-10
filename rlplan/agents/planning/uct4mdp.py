@@ -66,6 +66,7 @@ class UCT4MDP(Agent):
 
     def __init__(self, oracle, state, fixed_depth=True, max_depth=10, max_rollout_it=20, gamma=0.95, cp=1.0, n_it=5000):
         super().__init__()
+        self.id = 'UCT4MDP'
         self.env = deepcopy(oracle)
         self.model = Model(self.env, gamma, cp, fixed_depth, max_depth, max_rollout_it)
         self.n_iterations = n_it
