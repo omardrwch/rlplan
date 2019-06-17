@@ -99,6 +99,5 @@ if __name__ == '__main__':
     env_ = Chain(L=12)
     s_ = env_.reset()
     agent = SparseSampling(env_, epsilon=0.1, gamma=0.9, rmax=1.0, max_transitions=4, max_depth=12)
-
     # env.render(mode='auto', policy=uct.policy)
 

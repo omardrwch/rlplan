@@ -55,5 +55,6 @@ class BernoulliBandit(FiniteMDP):
         return arm.sample()
 
 
+
 if __name__ == '__main__':
     env = BernoulliBandit([0.8, 0.5, 0.3])
