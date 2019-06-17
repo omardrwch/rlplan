@@ -2,6 +2,7 @@ gym
 numpy
 pytest
 pyqt5
+Pillow
 matplotlib
 torch
 tensorflow

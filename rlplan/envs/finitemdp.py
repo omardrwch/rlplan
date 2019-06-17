@@ -23,7 +23,7 @@ class FiniteMDP(gym.Env, ABC):
         Ns   (int): Number of states
         Na   (int): Number of actions
         random   (np.random.RandomState) : random number generator
-        history(list): list containing all (state,action,reward) obtained in the environment
+        history(list): list containing all (state, action, reward, next_state, done) obtained in the environment
     """
     def __init__(self, states, action_sets, P, seed_val=42, track=False, max_history_size=500000):
         super().__init__()
@@ -115,7 +115,7 @@ class FiniteMDP(gym.Env, ABC):
         info = {}
 
         if self.track:
-            self.history.append((self.state, action, reward))
+            self.history.append((self.state, action, reward, next_state, done))
             history_len = len(self.history)
             if history_len > self.max_history_size:
                 self.history = self.history[history_len-self.max_history_size:]

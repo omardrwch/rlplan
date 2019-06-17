@@ -1,2 +1,2 @@
-from .qlearning import QLearningAgent
+from .qlearning import QLearningAgent, QLearningUcbAgent
 from .crossentropy import CrossEntropyAgent

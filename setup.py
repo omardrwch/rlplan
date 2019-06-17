@@ -11,5 +11,5 @@ setup(name='rlplan',
       author_email='',
       license='MIT',
       packages=packages,
-      install_requires=['numpy', 'gym', 'pytest', 'matplotlib', 'torch'],
+      install_requires=['numpy', 'gym', 'pytest', 'matplotlib', 'torch', 'Pillow'],
       zip_safe=False)

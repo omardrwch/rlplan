@@ -26,7 +26,8 @@ class GridWorld(FiniteMDP):
         :param walls: ((x0, y0), (x1, y1), ...) = coordinates of walls
         :param default_reward: reward received at states not in  'reward_at'
         :param enable_render: if True, requires pyqt5, creates renderer object
-        :param track: record all (state,action,reward) obtained in the environment. useful to visualize exploration.
+        :param track: record all (state, action, reward, next_state, done) obtained in the environment.
+                      useful to visualize exploration.
     """
 
     def __init__(self,
