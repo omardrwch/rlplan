@@ -10,7 +10,11 @@ class TwoRoomDense(GridWorld):
     """
     Gridworld consisting of two rooms, reward = distance to goal.
     """
-    def __init__(self, nrows=3, ncols=3, success_probability=1.0, enable_render=True, seed_val=42):
+    def __init__(self, nrows=3,
+                 ncols=3,
+                 success_probability=1.0,
+                 enable_render=True,
+                 seed_val=42):
         self.goal_coord = (nrows - 1, ncols - 1)
         start_coord = (0, 0)
         reward_at = {self.goal_coord: 1}  # just for rendering, reward_fn is redefined in this class

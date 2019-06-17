@@ -26,6 +26,7 @@ class GridWorld(FiniteMDP):
         :param walls: ((x0, y0), (x1, y1), ...) = coordinates of walls
         :param default_reward: reward received at states not in  'reward_at'
         :param enable_render: if True, requires pyqt5, creates renderer object
+        :param track: record all (state,action,reward) obtained in the environment. useful to visualize exploration.
     """
 
     def __init__(self,
@@ -38,7 +39,8 @@ class GridWorld(FiniteMDP):
                  reward_at=None,
                  walls=None,
                  default_reward=-1.0,
-                 enable_render=True):
+                 enable_render=True,
+                 track=False):
 
         # Print information
         self.enable_render = enable_render
@@ -101,13 +103,15 @@ class GridWorld(FiniteMDP):
 
         # Build
         self._build()
-        super().__init__(self.states, self.action_sets, self.P, seed_val)
+        super().__init__(self.states, self.action_sets, self.P, seed_val, track)
 
         # Graphic rendering
         if self.enable_render:
             import rlplan.envs.rendering_gw as rendering
             self.render_info = self.get_render_info()
             self.renderer = rendering.Renderer(self.render_info)
+            self.render_step_count = 0
+            self.MAX_RENDER_STEPS = 10*self.ncols*self.nrows
 
     def is_terminal(self, state):
         state_coord = self.index2coord[state]
@@ -271,7 +275,8 @@ class GridWorld(FiniteMDP):
                  self.reward_at,
                  self.walls,
                  self.default_reward,
-                 enable_render=False)
+                 enable_render=False,
+                 track=self.track)
         new_gw.state = self.state
 
         # use the same renderer
@@ -300,6 +305,7 @@ class GridWorld(FiniteMDP):
         :return:
         """
         self.renderer.reset()
+        self.render_step_count = 0
         if not self.enable_render:
             print("Rendering not enabled. Call constructor with enable_rendering=True.")
             return
@@ -326,10 +332,17 @@ class GridWorld(FiniteMDP):
             action = policy.sample(one_hot_state)
 
         _, _, done, _ = self.step(action)
+
+        self.render_step_count += 1
+        if self.render_step_count > self.MAX_RENDER_STEPS:
+            print("\n ... render timeout!")
+            return
+
         if not done:
             self.renderer.run(self.get_render_info())
         else:
             print("\n ...done!")
+            return
 
 
 if __name__ == '__main__':

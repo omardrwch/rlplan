@@ -42,6 +42,10 @@ class Agent:
         assert self.policy is not None, "Cannot evaluate agent, policy is not defined"
         if env is None:
             env = copy.deepcopy(self.env)
+
+        # disable tracking
+        env.track = False
+
         rewards = []
         for sim in range(n_sim):
             rewards.append([])

@@ -15,13 +15,17 @@ class FiniteMDP(gym.Env, ABC):
                             action_sets[i][j] returns the index of the j-th available action in state i
         P    (numpy.array): Array of shape (Ns, Na, Ns) containing the transition probabilities,
                             P[s, a, s'] = Prob(S_{t+1}=s'| S_t = s, A_t = a). Na is the total number of actions.
+        seed_val(int): Random number generator seed
+        track (bool): record all (state,action,reward) obtained in the environment. useful to visualize exploration.
+        max_history_size(int): max length of history list
 
     Attributes:
         Ns   (int): Number of states
         Na   (int): Number of actions
         random   (np.random.RandomState) : random number generator
+        history(list): list containing all (state,action,reward) obtained in the environment
     """
-    def __init__(self, states, action_sets, P, seed_val=42):
+    def __init__(self, states, action_sets, P, seed_val=42, track=False, max_history_size=500000):
         super().__init__()
         self.states = states
         self.action_sets = action_sets
@@ -29,9 +33,12 @@ class FiniteMDP(gym.Env, ABC):
         self.Ns = len(states)
         self.Na = len(self.actions)
         self.P = P
+        self.track = track
 
         self.action_space = spaces.Discrete(self.Na)
         self.observation_space = spaces.Discrete(self.Ns)
+        self.history = []
+        self.max_history_size = max_history_size
 
         self.state = None
         self.random = np.random.RandomState(seed_val)
@@ -106,8 +113,14 @@ class FiniteMDP(gym.Env, ABC):
         reward = self.reward_fn(self.state, action, next_state)
         done = self.is_terminal(self.state)
         info = {}
-        self.state = next_state
 
+        if self.track:
+            self.history.append((self.state, action, reward))
+            history_len = len(self.history)
+            if history_len > self.max_history_size:
+                self.history = self.history[history_len-self.max_history_size:]
+
+        self.state = next_state
         observation = next_state
         return observation, reward, done, info
 

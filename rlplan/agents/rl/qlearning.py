@@ -5,30 +5,6 @@ from copy import deepcopy
 from rlplan.policy import Policy
 
 
-class UctPolicy(Policy):
-    """
-    UCT policy: when queried for an action, run UCT.
-    If memoize is True, one UCT object per state is saved and reused.
-    """
-    def __init__(self, uct, memoize=True):
-        super().__init__()
-        self.uct = uct
-        self.memoize = memoize
-        self.state2uct = {}
-
-    def sample(self, state):
-        if not self.memoize:
-            _, action = self.uct.run(state)
-        else:
-            if state in self.state2uct:
-                self.state2uct[state].n_iterations = 500
-                _, action = self.state2uct[state].run()
-            else:
-                _, action = self.uct.run(state)
-                self.state2uct[state] = deepcopy(self.uct)
-        return action
-
-
 class QLearningAgent(Agent):
     """
     Implements Q-learning algorithm for finite MDPs using epsilon-greedy exploration
