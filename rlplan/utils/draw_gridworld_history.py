@@ -2,7 +2,7 @@ from PIL import Image, ImageDraw, ImageColor
 import numpy as np
 
 
-def draw_gridworld_history(env, base_length=100):
+def draw_gridworld_history(env, base_length=50):
     """
     :param env: grid world environment
     :param base_length: base length in pixels
@@ -35,7 +35,7 @@ def draw_gridworld_history(env, base_length=100):
     im.show()
 
 
-def draw_grid_world_state_distribution(env, base_length=100):
+def draw_grid_world_state_distribution(env, base_length=50):
     """
     :param env: grid world environment
     :param base_length: base length in pixels

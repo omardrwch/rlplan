@@ -1,6 +1,6 @@
 import numpy as np
 from rlplan.policy.policy import Policy
-
+from rlplan.utils import masked_argmax
 
 class FinitePolicy(Policy):
     """
@@ -46,8 +46,7 @@ class FinitePolicy(Policy):
                 prob = env.P[s, a, :]
                 rewards = np.array([env.reward_fn(s, a, s_) for s_ in env.states])
                 Q[s, a] = np.sum(prob * (rewards + gamma * V))
-            temp = Q[s, env.available_actions(s)].max()
-            action_array[s] = np.abs(Q[s, :] - temp).argmin()
+            action_array[s] = masked_argmax(Q[s, :], env.available_actions(s))
         return cls.from_action_array(action_array, Na)
 
     @classmethod
@@ -59,8 +58,7 @@ class FinitePolicy(Policy):
         action_array = np.zeros(Ns, dtype=np.int64)
 
         for s in range(Ns):
-            temp = Q[s, env.available_actions(s)].max()
-            action_array[s] = np.abs(Q[s, :] - temp).argmin()
+            action_array[s] = masked_argmax(Q[s, :], env.available_actions(s))
         return cls.from_action_array(action_array, Na)
 
     def evaluate(self, env, gamma):

@@ -2,7 +2,7 @@ import numpy as np
 from rlplan.policy import FinitePolicy
 from rlplan.agents import Agent
 from copy import deepcopy
-from rlplan.policy import Policy
+from rlplan.utils import masked_argmax
 
 
 class QLearningAgent(Agent):
@@ -130,8 +130,9 @@ class QLearningAgent(Agent):
             # exploit
             state = x
             actions = self.env.available_actions(state)
-            temp = np.max(self.Q[state, actions])
-            a = np.abs(self.Q[state, :]-temp).argmin()
+            a = masked_argmax(self.Q[state, :], actions)
+            # temp = np.max(self.Q[state, actions])
+            # a = np.abs(self.Q[state, :]-temp).argmin()
             return a
 
     def step(self):
@@ -160,7 +161,6 @@ class QLearningAgent(Agent):
         self.state = observation
 
         return done, reward
-
 
 
 class QLearningUcbAgent(Agent):
@@ -288,8 +288,7 @@ class QLearningUcbAgent(Agent):
 
         #
         actions = self.env.available_actions(x)
-        temp = np.max(q_hat[actions]+bonus[actions])
-        a = np.abs(q_hat-temp).argmin()
+        a = masked_argmax(q_hat+bonus, actions)
         return a
 
     def step(self):

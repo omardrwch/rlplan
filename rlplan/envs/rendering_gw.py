@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
 from PyQt5.QtGui import QPainter, QColor, QBrush
 
-TILE_SIZE = 100
+TILE_SIZE = 50
 RUNNING = False
 STOP = False
 app = QApplication.instance()

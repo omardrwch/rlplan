@@ -8,7 +8,7 @@ from rlplan.envs import GridWorld
 
 class TwoRoomDense(GridWorld):
     """
-    Gridworld consisting of two rooms, reward = distance to goal.
+    Gridworld consisting of two rooms, reward = exp(-distance to goal).
     """
     def __init__(self, nrows=3,
                  ncols=3,
