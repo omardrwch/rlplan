@@ -9,9 +9,9 @@ from rlplan.prediction import TabularTD
 gamma = 0.9
 
 # Create environment
-env = Chain(10)
+# env = Chain(10)
 # env = ToyEnv1()
-# env = GridWorld(success_probability=0.9, nrows=4, ncols=4, walls=((1, 1),))
+env = GridWorld(success_probability=0.9, nrows=4, ncols=4, walls=((1, 1),))
 
 # Initialize and train dynamic programming agent
 dp_agent = DynProgAgent(env, method='policy-iteration', gamma=gamma)

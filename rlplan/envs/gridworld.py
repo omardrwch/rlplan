@@ -112,7 +112,7 @@ class GridWorld(FiniteMDP):
             self.render_info = self.get_render_info()
             self.renderer = rendering.Renderer(self.render_info)
             self.render_step_count = 0
-            self.MAX_RENDER_STEPS = 10*self.ncols*self.nrows
+            self.MAX_RENDER_STEPS = 2*self.Ns
 
     def is_terminal(self, state):
         state_coord = self.index2coord[state]
@@ -280,9 +280,12 @@ class GridWorld(FiniteMDP):
                  track=self.track)
         new_gw.state = self.state
 
+        # recover reward function
+        new_gw.reward_fn = self.reward_fn
+
         # use the same renderer
         new_gw.renderer = self.renderer
-        new_gw.enable_render = True
+        new_gw.enable_render = self.enable_render
 
         return new_gw
 

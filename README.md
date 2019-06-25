@@ -14,15 +14,17 @@ These environments can be used to debug RL algorithms.
 
 # Contents
  
-* rlplan.agents.rl
-    * Agent: base class, with a function to evaluate the agent
-    * Q-Learning
-    * Cross Entropy method
+* rlplan.agents
+    * Agent: base class, with a function to evaluate the agent 
 
-* rlplan.agents.planning
-    * Dynamic programming (value/policy iteration)
-    * [UCT](http://ggp.stanford.edu/readings/uct.pdf) implemented for MDPs
-    * [TrailBlazer](http://researchers.lille.inria.fr/~valko/hp/publications/grill2016blazing.pdf)
+    * rlplan.agents.rl
+        * Tabular Q-Learning
+        * Cross Entropy method
+    
+    * rlplan.agents.planning
+        * Dynamic programming (value/policy iteration)
+        * [UCT](http://ggp.stanford.edu/readings/uct.pdf) implemented for MDPs
+        * [TrailBlazer](http://researchers.lille.inria.fr/~valko/hp/publications/grill2016blazing.pdf)
 
 * rlplan.prediction
     * tabular TD(lambda)
