@@ -2,6 +2,24 @@
 Deep Q Learning
 
 Some code was taken from https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html
+
+
+From Mathieu:
+
+def compute_slow_params_update(slow_params, fast_params, tau):
+
+    slow_params_dict = slow_params.state_dict()
+    fast_params_dict = fast_params.state_dict()
+
+    for module_key in slow_params_dict.keys() :
+        slow_params_dict[module_key] += tau*(fast_params_dict[module_key] - slow_params_dict[module_key])
+
+return slow_params_dict
+
+
+---
+
+self.ref_model.load_state_dict(compute_slow_params_update(self.ref_model, self.forward_model, self.tau))
 """
 
 import torch
@@ -252,14 +270,14 @@ class DQNAgent(Agent):
 
 if __name__ == '__main__':
     # env_ = gym.make("CartPole-v0")
-    from rlplan.envs import TwoRoomDense
-    from rlplan.utils.gridworld_analysis import draw_grid_world_state_distribution
-    env_ = TwoRoomDense(5, 5)
+    from rlplan.envs import GridWorld
+    from rlplan.utils.gridworld_analysis import visualize_exploration
+    env_ = GridWorld(nrows=5, ncols=5, success_probability=1.0, walls=[])
     env_.track = True
     dqn_agent = DQNAgent(env_, log_every=10, horizon=200, reward_threshold=np.inf, epsilon_decay=300, epsilon_min=0.4)
     dqn_agent.train(n_episodes=300)
 
-    draw_grid_world_state_distribution(dqn_agent.env.unwrapped)
+    visualize_exploration(dqn_agent.env.unwrapped)
 
     # state = env_.reset()
     # q = dqn_agent.get_q(np.array([state, state, state]))

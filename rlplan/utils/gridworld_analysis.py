@@ -1,5 +1,63 @@
 from PIL import Image, ImageDraw, ImageColor
 import numpy as np
+import matplotlib.pyplot as plt
+import warnings
+
+
+def visualize_exploration(env, block_size=500, max_n_plots=36, fignum='gridworld-exploration', show=True):
+    """
+    :param env: grid world environment
+    :param block_size: size of (time) block to average
+    :param max_n_plots: maximum number of plots
+    :param fignum: figure number
+    :param show: if True, call plt.show()
+    :return:
+    """
+    N = len(env.history)
+    visits = np.zeros((env.nrows, env.ncols, N))
+    walls_mask = np.zeros((env.nrows, env.ncols))
+
+    for coord in env.walls:
+        walls_mask[coord[0], coord[1]] = 1
+
+    for ii in range(N):
+        state, action, reward, next_state, done = env.history[ii]
+        row, col = env.index2coord[state]
+        visits[row, col, ii] = 1.0
+
+    sum_visits = np.cumsum(visits, axis=2)
+    normalization = np.cumsum(np.ones((env.nrows, env.ncols, N)), axis=2)
+
+    # freq_visits[x,y,ii] : normalized number of times the state (x,y) has been visited up to time ii
+    freq_visits = sum_visits/normalization
+
+    # Visualization
+    n_blocks = N // block_size
+    if n_blocks > max_n_plots:
+        n_blocks = max_n_plots
+        warnings.warn("Number of blocks exceeded max. Clipping to max_n_plots")
+    assert n_blocks > 0, "Not enough data to visualize exploration. Try reducing block_size."
+
+    diff = N - n_blocks*block_size
+    freq_visits = freq_visits[:, :, diff:]
+
+    n_subplot_x = int(np.ceil(np.sqrt(n_blocks)))
+    n_subplot_y = int(np.ceil(n_blocks/n_subplot_x))
+    fig, axs = plt.subplots(n_subplot_x, n_subplot_y, num=fignum, sharex=True, sharey=True, squeeze=False)
+    fig.suptitle("Explored regions versus time - read from left to right")
+    axs = axs.reshape(-1)
+    for block in range(n_blocks):
+        time_idx = block*block_size
+        data = freq_visits[:, :, time_idx]
+        axs[block].matshow(data)
+        axs[block].set_axis_off()
+
+    for idx in range(n_blocks, n_subplot_x*n_subplot_y):
+        axs[idx].set_visible(False)
+
+    if show:
+        plt.show()
+
 
 
 def draw_gridworld_history(env, base_length=50):

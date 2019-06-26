@@ -54,7 +54,7 @@ class TwoRoomDense(GridWorld):
         return r
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     gw = TwoRoomDense(9, 9, success_probability=1.0)
 
     from rlplan.agents.planning import DynProgAgent
