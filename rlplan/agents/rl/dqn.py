@@ -253,7 +253,7 @@ class DQNAgent(Agent):
 if __name__ == '__main__':
     # env_ = gym.make("CartPole-v0")
     from rlplan.envs import TwoRoomDense
-    from rlplan.utils.draw_gridworld_history import draw_grid_world_state_distribution
+    from rlplan.utils.gridworld_analysis import draw_grid_world_state_distribution
     env_ = TwoRoomDense(5, 5)
     env_.track = True
     dqn_agent = DQNAgent(env_, log_every=10, horizon=200, reward_threshold=np.inf, epsilon_decay=300, epsilon_min=0.4)
