@@ -16,7 +16,6 @@ def compute_slow_params_update(slow_params, fast_params, tau):
 
 return slow_params_dict
 
-
 ---
 
 self.ref_model.load_state_dict(compute_slow_params_update(self.ref_model, self.forward_model, self.tau))
@@ -121,7 +120,7 @@ class DQNAgent(Agent):
         # q-function approximator
         self.net = net
         if net is None:  # default network
-            hidden_size = 256
+            hidden_size = 128
             obs_size = self.env.observation_space.shape[0]
             n_actions = self.env.action_space.n
             self.net = Net(obs_size, hidden_size, n_actions)
@@ -269,15 +268,16 @@ class DQNAgent(Agent):
 
 
 if __name__ == '__main__':
-    # env_ = gym.make("CartPole-v0")
+    env_ = gym.make("CartPole-v0")
     from rlplan.envs import GridWorld
-    from rlplan.utils.gridworld_analysis import visualize_exploration
-    env_ = GridWorld(nrows=5, ncols=5, success_probability=1.0, walls=[])
-    env_.track = True
-    dqn_agent = DQNAgent(env_, log_every=10, horizon=200, reward_threshold=np.inf, epsilon_decay=300, epsilon_min=0.4)
+    # from rlplan.utils.gridworld_analysis import visualize_exploration
+    # env_ = GridWorld(nrows=5, ncols=5, success_probability=1.0, walls=[])
+    # env_.track = True
+    dqn_agent = DQNAgent(env_, log_every=10, horizon=200, reward_threshold=195, epsilon_decay=200, epsilon_min=0.1)
     dqn_agent.train(n_episodes=300)
 
-    visualize_exploration(dqn_agent.env.unwrapped)
+    if isinstance(env_, GridWorld):
+        visualize_exploration(dqn_agent.env.unwrapped)
 
     # state = env_.reset()
     # q = dqn_agent.get_q(np.array([state, state, state]))

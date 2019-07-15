@@ -54,6 +54,45 @@ class TwoRoomDense(GridWorld):
         return r
 
 
+class TwoRoomSparse(GridWorld):
+    """
+    Gridworld consisting of two rooms, reward = exp(-distance to goal).
+    """
+    def __init__(self, nrows=3,
+                 ncols=3,
+                 success_probability=1.0,
+                 enable_render=True,
+                 seed_val=42):
+        self.goal_coord = (nrows - 1, ncols - 1)
+        start_coord = (0, 0)
+        reward_at = {self.goal_coord: 1}
+        terminal_states = (self.goal_coord, )
+        default_reward = 0.0
+
+        assert nrows >= 3
+        assert ncols >= 3
+
+        # defining walls
+        middle_col = ncols // 2
+        middle_row = nrows // 2
+        walls = ()
+        for row in range(nrows):
+            if row != middle_row:
+                walls += ((row, middle_col),)
+        #
+
+        super().__init__(seed_val,
+                         nrows,
+                         ncols,
+                         start_coord,
+                         terminal_states,
+                         success_probability,
+                         reward_at,
+                         walls,
+                         default_reward,
+                         enable_render)
+
+
 if __name__ == '__main__':
     gw = TwoRoomDense(9, 9, success_probability=1.0)
 
