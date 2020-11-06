@@ -134,6 +134,26 @@ def draw_grid_world_state_distribution(env, base_length=50):
     im.show()
 
 
+def get_action_frequency(env):
+    """
+    :param env: grid world environment
+    :param base_length: base length in pixels
+    :return:
+    """
+
+    action_freq = np.zeros((env.Ns, env.Na))
+    H = len(env.history)
+
+    for ii in range(H):
+        state, action, reward, next_state, done = env.history[ii]
+        action_freq[state, action] += 1.0
+
+    for state in range(env.Ns):
+        action_freq[state, :] = action_freq[state, :]/action_freq[state, :].sum()
+
+    return action_freq
+
+
 if __name__ == '__main__':
     from rlplan.envs import GridWorld
     from rlplan.agents.planning import DynProgAgent

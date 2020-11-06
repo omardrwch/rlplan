@@ -25,7 +25,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 from rlplan.agents import Agent
 from rlplan.policy import Policy
 from rlplan.utils.wrappers import DiscreteOneHotWrapper
@@ -269,15 +269,15 @@ class DQNAgent(Agent):
 
 if __name__ == '__main__':
     env_ = gym.make("CartPole-v0")
-    from rlplan.envs import GridWorld
+    # from rlplan.envs import GridWorld
     # from rlplan.utils.gridworld_analysis import visualize_exploration
     # env_ = GridWorld(nrows=5, ncols=5, success_probability=1.0, walls=[])
     # env_.track = True
     dqn_agent = DQNAgent(env_, log_every=10, horizon=200, reward_threshold=195, epsilon_decay=200, epsilon_min=0.1)
     dqn_agent.train(n_episodes=300)
 
-    if isinstance(env_, GridWorld):
-        visualize_exploration(dqn_agent.env.unwrapped)
+    # if isinstance(env_, GridWorld):
+    #     visualize_exploration(dqn_agent.env.unwrapped)
 
     # state = env_.reset()
     # q = dqn_agent.get_q(np.array([state, state, state]))

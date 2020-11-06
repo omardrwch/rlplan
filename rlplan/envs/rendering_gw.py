@@ -121,7 +121,7 @@ class GridWorldWidget(QWidget):
                 if (rr, cc) in self.render_info['reward_at']:
                     reward = self.render_info['reward_at'][(rr, cc)]
                     if reward >= 0:
-                        color = QColor(0, 200, 0)
+                        color = QColor(0, reward*200, 0)
                     else:
                         color = QColor(200, 0, 0)
 

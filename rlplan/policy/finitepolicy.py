@@ -2,6 +2,7 @@ import numpy as np
 from rlplan.policy.policy import Policy
 from rlplan.utils import masked_argmax
 
+
 class FinitePolicy(Policy):
     """
     Class for defining a policy in a finite MDP.
@@ -15,6 +16,13 @@ class FinitePolicy(Policy):
         self.policy_array = policy_array
         self.random = np.random.RandomState(seed)
         self.actions = np.arange(policy_array.shape[1], dtype=np.int64)
+
+    @classmethod
+    def uniform(cls, n_states, n_actions):
+        policy_array = np.zeros((n_states, n_actions))
+        for ii in range(n_states):
+            policy_array[ii, :] = np.ones(n_actions)/n_actions
+        return cls(policy_array)
 
     @classmethod
     def from_action_array(cls, action_array, n_actions):

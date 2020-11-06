@@ -10,10 +10,11 @@ from rlplan.envs import FiniteMDP
 # rlplan.envs.rendering_gw is imported in the constructor of GridWorld
 
 
-class GridWorld(FiniteMDP):
+class SmoothGridWorld(FiniteMDP):
     """
     Note:
         deep copies of GridWorld have same renderer
+        walls not implemented
 
     Args:
         :param seed_val: Random number generator seed
@@ -21,9 +22,8 @@ class GridWorld(FiniteMDP):
         :param ncols: number of columns
         :param start_coord: tuple with coordinates of initial position
         :param terminal_states: ((x0, y0), (x1, y1), ...) = coordinates of terminal states
-        :param success_probability: probability of moving in the chosen direction
+        :param sigma: variance of the transitions and rewards
         :param reward_at: dictionary, keys = tuple containing coordinates, values = reward at each coordinate
-        :param walls: ((x0, y0), (x1, y1), ...) = coordinates of walls
         :param default_reward: reward received at states not in  'reward_at'
         :param enable_render: if True, requires pyqt5, creates renderer object
         :param track: record all (state, action, reward, next_state, done) obtained in the environment.
@@ -35,11 +35,10 @@ class GridWorld(FiniteMDP):
                  nrows=8,
                  ncols=8,
                  start_coord=(0, 0),
-                 terminal_states = None,
-                 success_probability=1.0,
+                 terminal_states=None,
+                 sigma=2.0,
                  reward_at=None,
-                 walls=None,
-                 default_reward=-1.0,
+                 default_reward=0.0,
                  enable_render=True,
                  track=False):
 
@@ -56,22 +55,21 @@ class GridWorld(FiniteMDP):
         self.default_reward = default_reward
 
         # Default config
+        self.walls = ()  # walls NOT IMPLEMENTED !
         if reward_at is not None:
             self.reward_at = reward_at
         else:
-            self.reward_at = {(nrows-1, ncols-1): 1, (nrows-2, ncols-1): -10}
-        if walls is not None:
-            self.walls = walls
-        else:
-            self.walls = ((2, 1), (2, 2), (2, 3), (2, 5), (2, 6), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1))
+            self.reward_at = {(nrows-1, ncols-1): 1}  # THIS VARIABLE IS REDEFINED IN self._build_smooth_rewards,
+                                                      # so that the reward function becomes smooth
+        self.reward_vec = None  # defined in self._build_smooth_rewards
+
         if terminal_states is not None:
             self.terminal_states = terminal_states
         else:
-            self.terminal_states = ((nrows-1, ncols-1), (nrows-2, ncols-1))
+            self.terminal_states = ((nrows-1, ncols-1),)
 
-        # Probability of going left/right/up/down when choosing the correspondent action
-        # The remaining probability mass is distributed uniformly to other available actions
-        self.success_probability = success_probability
+        # Variance of the transitions
+        self.sigma = sigma
 
         # Value of the seed
         self.seed_val = seed_val
@@ -82,6 +80,7 @@ class GridWorld(FiniteMDP):
         # Actions (string to index & index to string)
         self.a_str2idx = {'left': 0, 'right': 1, 'up': 2, 'down': 3}
         self.a_idx2str = {0: 'left', 1: 'right', 2: 'up', 3: 'down'}
+        self.a_idx2direction = {0: (0, -1), 1: (0, 1), 2: (-1, 0), 3: (1, 0)}
 
         # --------------------------------------------
         # The variables below are defined in _build()
@@ -104,6 +103,7 @@ class GridWorld(FiniteMDP):
 
         # Build
         self._build()
+        self._build_smooth_rewards()  # redefine self.reward_at by smoothing
         super().__init__(self.states, self.action_sets, self.P, seed_val, track)
 
         # Graphic rendering
@@ -139,6 +139,19 @@ class GridWorld(FiniteMDP):
         self._build_transition_probabilities()
         self._build_ascii()
 
+    def _build_smooth_rewards(self):
+        new_reward_at = {}
+        self.reward_vec = np.zeros(self.Ns)
+        for ss in range(self.Ns):
+            ss_row, ss_col = self.index2coord[ss]
+            reward = 0.0
+            for reward_row, reward_col in  self.reward_at:
+                squared_dist = (reward_row-ss_row)**2.0 + (reward_col-ss_col)**2.0
+                reward += np.exp(-squared_dist/(self.sigma**2.0))
+            new_reward_at[(ss_row, ss_col)] = reward
+            self.reward_vec[ss] = reward
+        self.reward_at = new_reward_at
+
     def _build_state_mappings_and_states(self):
         index = 0
         for rr in range(self.nrows):
@@ -165,35 +178,24 @@ class GridWorld(FiniteMDP):
         self.P = np.zeros((Ns, Na, Ns))
         for s in range(Ns):
             s_coord = self.index2coord[s]
-            neighbors = self._get_neighbors(*s_coord)
-            valid_neighbors = [neighbors[nn][0] for nn in neighbors if neighbors[nn][1]]
-            n_valid = len(valid_neighbors)
+            # neighbors = self._get_neighbors(*s_coord)
+            # valid_neighbors = [neighbors[nn][0] for nn in neighbors if neighbors[nn][1]]
+            # n_valid = len(valid_neighbors)
             for a in range(Na):  # each action corresponds to a direction
-                for nn in neighbors:
-                    next_s_coord = neighbors[nn][0]
-                    if next_s_coord in valid_neighbors:
-                        next_s = self.coord2index[next_s_coord]
-                        if a == nn:  # action is successful
-                            self.P[s, a, next_s] = self.success_probability \
-                                                     + (1-self.success_probability)*(n_valid == 1)
-                        elif neighbors[a][0] not in valid_neighbors:
-                            self.P[s, a, s] = 1.0
-                        else:
-                            if n_valid > 1:
-                                self.P[s, a, next_s] = (1.0-self.success_probability)/(n_valid - 1)
+                center_a = self._get_center_in_direction(s_coord[0], s_coord[1], a)
+                center_row, center_col = center_a
+                for next_s in range(Ns):
+                    next_s_row, next_s_col = self.index2coord[next_s]
+                    squared_dist = (next_s_row-center_row)**2.0 + (next_s_col-center_col)**2.0
+                    self.P[s, a, next_s] = np.exp(-squared_dist/(self.sigma**2.0))
+                self.P[s, a, :] = self.P[s, a, :]/self.P[s, a, :].sum()
 
-    def _get_neighbors(self, row, col):
-        aux = {}
-        aux['left'] = (row, col-1)  # left
-        aux['right'] = (row, col+1)  # right
-        aux['up'] = (row-1, col)  # up
-        aux['down'] = (row+1, col)  # down
-        neighbors = {}
-        for direction_str in aux:
-            direction = self.a_str2idx[direction_str]
-            next_s = aux[direction_str]
-            neighbors[direction] = (next_s, self._is_valid(*next_s))
-        return neighbors
+    def _get_center_in_direction(self, row, col, direction_index):
+        delta_row, delta_col = self.a_idx2direction[direction_index]
+        center_row = max(0, min(row + delta_row, self.nrows - 1))
+        center_col = max(0, min(col + delta_col, self.ncols - 1))
+        center = (center_row, center_col)
+        return center
 
     def _is_valid(self, row, col):
         if (row, col) in self.walls:
@@ -267,15 +269,14 @@ class GridWorld(FiniteMDP):
     # Deep copy
     # ------------------------
     def __deepcopy__(self, memo):
-        new_gw = GridWorld(
+        new_gw = SmoothGridWorld(
                  self.seed_val,
                  self.nrows,
                  self.ncols,
                  self.start_coord,
                  self.terminal_states,
-                 self.success_probability,
+                 self.sigma,
                  self.reward_at,
-                 self.walls,
                  self.default_reward,
                  enable_render=False,
                  track=self.track)
@@ -351,11 +352,11 @@ class GridWorld(FiniteMDP):
 
 
 if __name__ == '__main__':
-    gw = GridWorld(nrows=8, ncols=7, success_probability=0.99)
+    gw = SmoothGridWorld(nrows=10, ncols=10, sigma=2.0)
     gw.render_ascii()
 
     from rlplan.agents.planning import DynProgAgent
-    dynprog = DynProgAgent(gw, method='policy-iteration', gamma=0.9)
+    dynprog = DynProgAgent(gw, method='value-iteration', gamma=0.9)
     V, _ = dynprog.train()
     gw.display_values(V)
 
